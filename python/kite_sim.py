@@ -1,3 +1,10 @@
+import matplotlib.pyplot as plt
+
+import numpy as np
+
+from math import sin cos tan2 sqrt 
+
+
 def kite_sim(aircraft, params):
     #function [NUM, FLOG, SYM] = kite_sim(aircraft, params)
     #casadi based kite dynamics simulation
@@ -30,53 +37,53 @@ def kite_sim(aircraft, params):
     #---------------------------
     # Mass and inertia parameters
     #---------------------------
-    Mass = aircraft.inertia.mass
-    Ixx = aircraft.inertia.Ixx
-    Iyy = aircraft.inertia.Iyy 
-    Izz = aircraft.inertia.Izz
-    Ixz = aircraft.inertia.Ixz
+    Mass = aircraft['inertia']['mass']
+    Ixx = aircraft['inertia']['Ixx']
+    Iyy = aircraft['inertia']['Iyy']
+    Izz = aircraft['inertia']['Izz']
+    Ixz = aircraft['inertia']['Ixz']
 
     #-------------------------------
     # Static aerodynamic coefficients
     #-------------------------------
     # All characteristics assumed linear
-    CL0 = aircraft.aerodynamic.CL0
-    CL0_t = aircraft.aerodynamic.CL0_tail 
-    CLa_tot = aircraft.aerodynamic.CLa_total  
-    CLa_w = aircraft.aerodynamic.CLa_wing 
-    CLa_t = aircraft.aerodynamic.CLa_tail
-    e_o = aircraft.aerodynamic.e_oswald
+    CL0 = aircraft['aerodynamic']['CL0']
+    CL0_t = aircraft['aerodynamic']['CL0_tail']
+    CLa_tot = aircraft['aerodynamic']['CLa_total']
+    CLa_w = aircraft['aerodynamic']['CLa_wing']
+    CLa_t = aircraft['aerodynamic']['CLa_tail']
+    e_o = aircraft['aerodynamic']['e_oswald']
     dw = CLa_tot / (pi * e_o * AR) # downwash acting at the tail []
-    CD0_tot = aircraft.aerodynamic.CD0_total 
-    CD0_w = aircraft.aerodynamic.CD0_wing
-    CD0_t = aircraft.aerodynamic.CD0_tail 
-    CYb  = aircraft.aerodynamic.CYb
-    CYb_vt = aircraft.aerodynamic.CYb_vtail
-    Cm0 = aircraft.aerodynamic.Cm0
-    Cma = aircraft.aerodynamic.Cma
-    Cn0 = aircraft.aerodynamic.Cn0
-    Cnb = aircraft.aerodynamic.Cnb 
-    Cl0 = aircraft.aerodynamic.Cl0 
-    Clb = aircraft.aerodynamic.Clb
+    CD0_tot = aircraft['aerodynamic']['CD0_total']
+    CD0_w = aircraft['aerodynamic']['CD0_wing']
+    CD0_t = aircraft['aerodynamic']['CD0_tail']
+    CYb  = aircraft['aerodynamic']['CYb']
+    CYb_vt = aircraft['aerodynamic']['CYb_vtail']
+    Cm0 = aircraft['aerodynamic']['Cm0']
+    Cma = aircraft['aerodynamic']['Cma']
+    Cn0 = aircraft['aerodynamic']['Cn0']
+    Cnb = aircraft['aerodynamic']['Cnb']
+    Cl0 = aircraft['aerodynamic']['Cl0'] 
+    Clb = aircraft['aerodynamic']['Clb']
 
-    CLq = aircraft.aerodynamic.CLq
-    Cmq = aircraft.aerodynamic.Cmq
-    CYr = aircraft.aerodynamic.CYr 
-    Cnr = aircraft.aerodynamic.Cnr 
-    Clr = aircraft.aerodynamic.Clr
-    CYp = aircraft.aerodynamic.CYp
-    Clp = aircraft.aerodynamic.Clp 
-    Cnp = aircraft.aerodynamic.Cnp 
+    CLq = aircraft['aerodynamic']['CLq']
+    Cmq = aircraft['aerodynamic']['Cmq']
+    CYr = aircraft['aerodynamic']['CYr']
+    Cnr = aircraft['aerodynamic']['Cnr']
+    Clr = aircraft['aerodynamic']['Clr']
+    CYp = aircraft['aerodynamic']['CYp']
+    Clp = aircraft['aerodynamic']['Clp']
+    Cnp = aircraft['aerodynamic']['Cnp']
 
     #------------------------------
     # Aerodynamic effects of control
     #------------------------------
-    CLde = aircraft.aerodynamic.CLde
-    CYdr = aircraft.aerodynamic.CYdr
-    Cmde = aircraft.aerodynamic.Cmde 
-    Cndr = aircraft.aerodynamic.Cndr 
-    Cldr = aircraft.aerodynamic.Cldr
-    CDde = aircraft.aerodynamic.CDde # (assume negligible)
+    CLde = aircraft['aerodynamic']['CLde']
+    CYdr = aircraft['aerodynamic']['CYdr']
+    Cmde = aircraft['aerodynamic']['Cmde']
+    Cndr = aircraft['aerodynamic']['Cndr']
+    Cldr = aircraft['aerodynamic']['Cldr']
+    CDde = aircraft['aerodynamic']['CDde']# (assume negligible)
 
     CL_daoa = -2 * CLa_t * Vh * dw # aoa-rate effect on lift (from Etkin) [] Stengel gives positive estimation !!!
     Cm_daoa = -2 * CLa_t * Vh * (lt/c) * dw #aoa-rate effect on pitch moment [] Stengel gives positive estimation !!!
@@ -111,59 +118,49 @@ def kite_sim(aircraft, params):
     T_FINISH = 1.0
     DT = 0.01
 
-    if(isfield(params, 'simulation'))
-    SIMULATION = params.simulation
-    end
-
-    if(isfield(params, 'int_type'))
-        if(isequal(params.int_type,'cvodes'))
-        USE_CVODES = 1
-        else if (isequal(params.int_type, 'rk4'))
-        USE_CVODES = 0
-            else
+    if(isfield(params, 'simulation')):
+        SIMULATION = params.simulation
+    
+    if(isfield(params, 'int_type')):
+        if(isequal(params.int_type,'cvodes')):
+            USE_CVODES = 1
+        elif (isequal(params.int_type, 'rk4')):
+            USE_CVODES = 0
+        else:
             fprintf(2, 'ERROR: Unknown integrator type: [#s] \n', params.int_type)
             error('Use "cvodes" or "rk4" instead')
-            end
-            end
-            end
-
+    
+    
     #simulation time span
-    if(isfield(params, 't_span'))
-        if(numel(params.t_span) ~= 3)
-        error('ERROR: time span format should be: [start, finish, dt]')
-        else
-        T_START = params.t_span(1)
-        T_FINISH = params.t_span(2)
-        DT = params.t_span(3)
-            if(T_START > T_FINISH)
-            error('ERROR: T_START > T_FINISH')
-            end
-            end
-            end
+    if(isfield(params, 't_span')):
+        if(numel(params.t_span) ~= 3):
+            error('ERROR: time span format should be: [start, finish, dt]')
+        else:
+            T_START = params.t_span(1)
+            T_FINISH = params.t_span(2)
+            DT = params.t_span(3)
+            if(T_START > T_FINISH):
+                error('ERROR: T_START > T_FINISH')
 
-    if(SIMULATION)
+    if(SIMULATION):
     #VR visualisation
-        if(isfield(params, 'vr'))
-        VR_SIM = params.vr
-        end
+        if(isfield(params, 'vr')):
+            VR_SIM = params.vr
 
         #initial condition and input
-        if(isfield(params,'x0') && isfield(params,'u0'))
-        X0 = params.x0
-        U0 = params.u0
-        else
-        error('ERROR: initial conditions "x0" and control "u0" should be specified for simulation')
-        end
+        if(isfield(params,'x0') && isfield(params,'u0')):
+            X0 = params.x0
+            U0 = params.u0
+        else:
+            error('ERROR: initial conditions "x0" and control "u0" should be specified for simulation')
 
-        if(isfield(params,'plot'))
-        PLOT_RESULTS = params.plot
-        end
-        end
+        if(isfield(params,'plot')):
+            PLOT_RESULTS = params.plot
 
 
     #TODO: for now assume there is no wind, this functionality will be added later
     V = L2(v)
-    V2 = v' * v
+    V2 = np.dot(v,v)
 
     ss = asin(v(2) / V) #side slip angle [rad] (v(3)/v(1)) // small angle assumption
     aoa = atan2(v(3) , v(1))  #angle of attack definition [rad] (v(2)/L2(v))
@@ -175,16 +172,16 @@ def kite_sim(aircraft, params):
     #-------------------------
     #Dynamic Equations: Forces
     #-------------------------
-    LIFT = (CL0 + CLa_tot * aoa) * dyn_press * S + ...
-           (0.25 * CLq * c * S * ro) * V * w(2)
+    LIFT = ( (CL0 + CLa_tot * aoa) * dyn_press * S + 
+           (0.25 * CLq * c * S * ro) * V * w(2) )
     DRAG = CD * dyn_press * S
-    SF = (CYb * ss + CYdr * dR) * dyn_press * S + ...
-            0.25 * (CYr * w(3) + CYp * w(1)) * (b * ro * S) * V
+    SF = ( (CYb * ss + CYdr * dR) * dyn_press * S + 
+            0.25 * (CYr * w(3) + CYp * w(1)) * (b * ro * S) * V ) 
 
     #Compute transformation betweeen WRF and BRF: qw_b
     #qw_b = q(aoa) * q(-ss)
-    q_aoa = [cos(aoa/2) 0 sin(aoa/2) 0]
-    q_ss = [cos(-ss/2) 0 0 sin(-ss/2)]
+    q_aoa = np.array([cos(aoa/2), 0, sin(aoa/2) 0])
+    q_ss = np.array([cos(-ss/2), 0, 0 sin(-ss/2)])
 
     qw_b = quat_mul(q_aoa, q_ss)
     qw_b_inv = quat_inv(qw_b)
@@ -193,22 +190,22 @@ def kite_sim(aircraft, params):
     #Aerodynamic forces in BRF: Faer0_b = qw_b * [0 -DRAG SF -LIFT] * qw_b_inv
     qF_tmp = quat_mul(qw_b_inv, [0 -DRAG 0 -LIFT])
     qF_q = quat_mul(qF_tmp, qw_b)
-    Faero_b = qF_q(2:4)
+    Faero_b = qF_q[1:4]
 
     Zde = (-CLde) * dE * dyn_press * S
-    FdE_tmp = quat_mul(quat_inv(q_aoa), [0 0 0 Zde])
+    FdE_tmp = quat_mul(quat_inv(q_aoa), np.array([0, 0, 0, Zde]))
     FdE = quat_mul(FdE_tmp, q_aoa)
-    FdE = FdE(2:4)
+    FdE = FdE[1:4]
 
-    Faero_b = Faero_b + FdE + [0 SF 0]
+    Faero_b = Faero_b + FdE + np.array([0, SF, 0])
 
     #Gravity force in BRF
-    qG = quat_mul(quat_inv(q),[000g])
+    qG = quat_mul(quat_inv(q),np.array([0,0,0,g]))
     qG_q = quat_mul(qG, q)
-    G_b = qG_q(2:4)
+    G_b = qG_q[1:4]
 
     #Propulsion force in BRF
-    T_b = [T00]
+    T_b = np.array([T,0,0])
 
     #Tether force
     #value: using smooth ramp approximation
@@ -221,16 +218,16 @@ def kite_sim(aircraft, params):
     Rv = ((d_ - Lt))
     Rs = -Rv * (r / d_)
     #damping term
-    qvi = quat_mul(q, [0 v])
+    qvi = quat_mul(q, np.append(v,0,0))
     qvi_q = quat_mul(qvi, quat_inv(q))
-    vi = qvi_q(2:4)
-    Rd = (-r / d_) * (r' * vi) / d_
+    vi = qvi_q[1:4]
+    Rd = (-r / d_) * (np.dot(r, vi)) / d_
     R = ( Ks * Rs + Kd * Rd) * Heaviside(d_ - Lt, 1)
 
     #BRF
-    qR = quat_mul(quat_inv(q),[0R])
+    qR = quat_mul(quat_inv(q),np.append(R,0,0))
     qR_q = quat_mul(qR, q)
-    R_b = qR_q(2:4)
+    R_b = qR_q[1:4]
 
 
     #Total external forces devided by glider's mass (linear acceleration)
@@ -240,37 +237,39 @@ def kite_sim(aircraft, params):
     #Dynamic Equation: Moments
     #-------------------------
     #Rolling Aerodynamic Moment
-    L = (Cl0 + Clb * ss + Cldr * dR) * dyn_press * S * b + ...
-    (Clr * w(3) + Clp * w(1)) * (0.25 * ro * b^2 * S) * V
+    L =  ( (Cl0 + Clb * ss + Cldr * dR) * dyn_press * S * b + 
+    (Clr * w(3) + Clp * w(1)) * (0.25 * ro * b^2 * S) * V )
 
 
     #Pitching Aerodynamic Moment
-    M = (Cm0 + Cma * aoa  + Cmde * dE) * dyn_press * S * c + ...
-    Cmq * (0.25 * S * c^2 * ro) * w(2) * V
+    M = ( (Cm0 + Cma * aoa  + Cmde * dE) * dyn_press * S * c + 
+    Cmq * (0.25 * S * c^2 * ro) * w(2) * V )
 
     #Yawing Aerodynamic Moment
-    N = (Cn0 + Cnb * ss + Cndr * dR) * dyn_press * S * b + ...
-    (Cnp * w(1) + Cnr * w(3)) * (0.25 * S * b^2 * ro) * V
-
+    N = ( (Cn0 + Cnb * ss + Cndr * dR) * dyn_press * S * b + 
+    (Cnp * w(1) + Cnr * w(3)) * (0.25 * S * b^2 * ro) * V )
+    
     #Aircraft Inertia Matrix 
-    J = [Ixx 0 Ixz 0 Iyy 00 Ixz 0 Izz]
-
+    #J = [Ixx 0 Ixz 0 Iyy 00 Ixz 0 Izz]
+    J = np.array([[Ixx, 0, Ixz],[0,Iyy,0],[Ixz,0,Izz]])
+    
     #Angular motion equationin BRF
-    Maero = [L M N]
+    Maero = np.arrayz([L M N])
+    
     #Moments rotation SRF -> BRF
     T_tmp = quat_mul(quat_inv(q_aoa), [0 Maero])
     Trot = quat_mul(T_tmp, q_aoa)
-    Maero = Trot(2:4)
+    Maero = Trot[1:4]
 
-    w_dot = inv(J) * (Maero - cross(w, J * w))
+    w_dot = np.inv(J) * (Maero - cross(w, J * w))
 
     #-----------------------------
     #Kinematic Equations: Position
     #-----------------------------
     # Aircraft position in the IRF
-    qv = quat_mul(q, [0 v])
+    qv = quat_mul(q, np.append([v,0,0]))
     qv_q = quat_mul(qv, quat_inv(q))
-    r_dot = qv_q(2:4)
+    r_dot = qv_q[1:4]
 
     #-----------------------------
     #Kinematic Equations: Attitude
@@ -279,9 +278,9 @@ def kite_sim(aircraft, params):
     q_dot = 0.5 * quat_mul(q, [0w])
 
     #Now we completely define dynamics of the aircraft
-    state = [v w r q]
-    control = [T dE dR]
-    dynamics = [v_dot w_dot r_dot q_dot]
+    state = np.array([v, w, r, q])
+    control = np.array([T dE dR])
+    dynamics = np.arra([v_dot, w_dot, r_dot, q_dot])
 
     dyn_func = Function('dynamics', {state, control}, {dynamics})
 
@@ -315,11 +314,10 @@ def kite_sim(aircraft, params):
     ss_func = Function('SS',{v},{ss})
 
     #return integrator function
-    if(USE_CVODES)
-    NUM.INT = CVODES_INT
-    else
-    NUM.INT = RK4_INT
-    end
+    if(USE_CVODES):
+        NUM.INT = CVODES_INT
+    else:
+        NUM.INT = RK4_INT
 
     #Symbolic expression for the model
     SYM.INT = integrator
@@ -337,10 +335,9 @@ def kite_sim(aircraft, params):
     NUM.DYN_JACOBIAN = dyn_jac
     NUM.RK4_JACOBIAN = rk4_jacobian
 
-    if(VR_SIM)
+    if(VR_SIM):
     #create simulation scene
         [scene] = CreateScene('BackView',1)
-        end
 
     #-----------------------------
     #Open-Loop Flight Simulation
@@ -348,15 +345,16 @@ def kite_sim(aircraft, params):
 
     #simulation & visualisation
     FLOG = []
-    if (SIMULATION)
-    t = T_START
-    log = []
-    flight_angles = []
-    res = []
-        while t <= T_FINISH
+    if (SIMULATION):
+        t = T_START
+        log = []
+        flight_angles = []
+        res = []
+        while t <= T_FINISH :
         #simulation loop
         #logging data
-            log = [log x0', t]
+            #TODO: transposed... log = [log x0', t] # test
+            log = [log, x0, t] # test
 
             aoa_t = aoa_func({x0(1:3)})
             full(aoa_t{1})
@@ -364,116 +362,119 @@ def kite_sim(aircraft, params):
             full(ss_t{1})
             flight_angles = [flight_angles full(aoa_t{1}) full(ss_t{1})]
 
-            if (USE_CVODES)
+            if (USE_CVODES):
                 out = dyn_func({x0,u0})
                 dyn =full(out{1})
 
                 out = CVODES_INT(struct('x0',x0, 'p',u0))
                 res = full(out.xf)
-            else
+            else:
                 out = RK4_INT({x0, u0, h})
                 res = full(out{1})
-            end
 
             t = t + h
             x0 = res
 
-            if(VR_SIM)
+            if(VR_SIM):
                 UpdateScene(scene, res(7:9), res(10:13),t)
-            end
 
-        end
 
         #return flight telemetry
         FLOG = log
 
-        if(PLOT_RESULTS)
+        if(PLOT_RESULTS):
             #trajectory 
-            figure
-            plot3(log(:,7), log(:,8), -log(:,9))
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.plot3(log(:,7), log(:,8), -log(:,9))
             axis equal
-            grid on
+            ax.grid()
 
             #velocities in BRF
-            figure('Name','Linear Velocities in BRF','NumberTitle','off')
-            plot(log(:,end), log(:,1:3))
-            grid on
+            fig = figure('Name','Linear Velocities in BRF','NumberTitle','off')
+            ax = fig.gca()
+            plt.plot(log(:,end), log(:,1:3))
+            plt.grid()
 
             #angle of attack
-            figure('Name','Angle of Attack & Sideslip Angle','NumberTitle','off')
+            fig = plt.figure('Name','Angle of Attack & Sideslip Angle','NumberTitle','off')
             #plot(rad2deg(flight_angles))
-            plot(log(:,end), flight_angles)
-            grid on
+            plt.plot(log(:,end), flight_angles)
+            plt.grid()
 
             #attitude
-            figure('Name','Attitude (EulerAngles)','NumberTitle','off')
-            plot(log(:,end), quat2eul(log(:, 10:13),'ZYX'))
-            grid on
+            plt.figure('Name','Attitude (EulerAngles)','NumberTitle','off')
+            plt.plot(log(:,end), quat2eul(log(:, 10:13),'ZYX'))
+            plt.grid()
 
             #angular rates
-            figure('Name','Angular rates in BRF','NumberTitle','off')
-            plot(log(:,end), log(:,4:6))
-            grid on
-        end
+            plt.figure('Name','Angular rates in BRF','NumberTitle','off')
+            plt.plot(log(:,end), log(:,4:6))
+            plt.grid()
 
-    end
-
-    end
 
     #Casadi helper functions
 
     #L2-norm of a vector
-    function [L2] = L2(x)
-    if(size(x,1) >= size(x,2))
-        L2 = sqrt(x' * x)
-    else
-    L2 = sqrt(x * x')
-    end
+def L2(x):
+    #function [L2] = L2(x)
+          
+        #    if(size(x,1) >= size(x,2)):
+        #        L2 = sqrt(x' * x)
+        #L2 = sqrt(np.dot(x, x))
+    return sqrt(np.dot(x, x))
+    #else:
+    #L2 = sqrt(x * x')
 
-    end
 
     #quaternion multiplication
-    function [q] = quat_mul(q1,q2)
-    s1 = q1(1)
-    v1 = q1(2:4)
+def quat_mul(q1,q2):
+    #function [q] = quat_mul(q1,q2)
+    s1 = q1[0]
+    v1 = q1[1:4]
 
-    s2 = q2(1)
-    v2 = q2(2:4)
+    s2 = q2[0]
+    v2 = q2[1:4]
 
-    s = s1*s2 - dot(v1,v2)
-    v = cross(v1,v2) + s1 * v2 + s2 * v1
+    s = s1*s2 - np.dot(v1,v2)
+    v = np.cross(v1,v2) + s1 * v2 + s2 * v1
 
-    q = [s v(1) v(2) v(3)]
-    end
+    #q = np.array([s,v(1),v(2),v(3)])
+    return np.array([s,v(1),v(2),v(3)])
 
     #inverse quaternion
-    function [q_inv] = quat_inv(q)
-    q_inv = [q(1) -q(2) -q(3) -q(4)]
-    end
+def quat_inv(q):
+    #function [q_inv] = quat_inv(q)
+    #q_inv = [q(1) -q(2) -q(3) -q(4)]
+    return np.array([q(1), -q(2), -q(3), -q(4)])
+
 
     #Runge-Kutta 4th-order symbolic integration method
-    function [x_h] = RK4_sym(x, u, f, h)
+def RK4_sym(x, u, f, h):
+    #    function [x_h] = RK4_sym(x, u, f, h)
     # this integrator is problem specific
     k1 = f({x,u})
     k2 = f({x + 0.5 * h * k1{1},u})
     k3 = f({x + 0.5 * h * k2{1},u})
     k4 = f({x + h * k3{1},u})
 
-    x_h = x + (h/6) * (k1{1} + 2*k2{1} + 2*k3{1} + k4{1})
-    end
+    #x_h = x + (h/6) * (k1{1} + 2*k2{1} + 2*k3{1} + k4{1})
+    return  x + (h/6) * (k1{1} + 2*k2{1} + 2*k3{1} + k4{1})
 
     #Heaviside smooth approximation
-    function[H] = Heaviside(x,k)
-    H = k / (1 + exp(-4*x))
- end
+return  Heaviside(x,k):
+    #function[H] = Heaviside(x,k)
+    #H = k / (1 + exp(-4*x))
+    return k / (1 + exp(-4*x))
 
-    function [scene] = CreateScene(viewpoint, is_recording)
+def CreateScene(viewpoint, is_recording):
+#    function [scene] = CreateScene(viewpoint, is_recording)
     #create 3D scene
     scene = struct
 
     scene.world = vrworld('world.wrl','new')
     open(scene.world)
-    fig = vrfigure(scene.world)
+    plt.fig = vrfigure(scene.world)
     # go to a viewpoint suitable for user navigation
     set(fig, 'Viewpoint', viewpoint)
 
@@ -481,18 +482,17 @@ def kite_sim(aircraft, params):
     scene.position = vrnode(scene.world, 'GliderTranslational')
     scene.attitude = vrnode(scene.world, 'GliderRotational')
 
-    if(is_recording)
+    if(is_recording):
         set(scene.world, 'RecordMode', 'manual')
         set(fig, 'Record2DFileName', 'flight_sim.avi')
         set(fig, 'Record2D', 'on')
         set(fig, 'Record2DCompressQuality', 100)
-    end
-    end
-
-    function [] = UpdateScene(scene, position, attitude, time)
+    
+def UpdateScene(scene, position, attitude, time):
+    #  function [] = UpdateScene(scene, position, attitude, time)
     #frame transformations with VR simulator
-p    q_sim = eul2quat([ 0 0 pi/2])
-
+    q_sim = eul2quat(np.array([ 0, 0, pi/2]))
+    
     Xi = position
     Qi = attitude
 
@@ -504,5 +504,5 @@ p    q_sim = eul2quat([ 0 0 pi/2])
     scene.attitude.rotation = quat2axang(q_disp)
     set(scene.world, 'Time', time)
 
-    vrdrawnow
-    end
+    vrdrawnow # TODO: what is
+
