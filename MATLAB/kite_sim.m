@@ -2,15 +2,15 @@ function [NUM, FLOG, SYM] = kite_sim(aircraft, params)
 %casadi based kite dynamics simulation
 import casadi.*
 
-%-------------------------
-%Enviromental constants
-%-------------------------
+% -------------------------
+% Enviromental constants
+% -------------------------
 g = 9.80665; % gravitational acceleration [m/s2] [WGS84]
 ro = 1.2985; % standart atmospheric density [kg/m3] [Standart Atmosphere 1976]
 
-%---------------------------
+% ---------------------------
 % Glider geometric parameters
-%---------------------------
+% ---------------------------
 b = aircraft.geometry.b;
 c = aircraft.geometry.c;
 AR = aircraft.geometry.AR;
@@ -26,7 +26,7 @@ Vf = (Sf * lf) / (S * b);    % fin volume coefficient []
 Vh = (lt * St) / (S * c);    % horizontal tail volume coefficient [] 
 
 %---------------------------
-% Mass and inertia parameters
+%Mass and inertia parameters
 %---------------------------
 Mass = aircraft.inertia.mass;
 Ixx = aircraft.inertia.Ixx;
@@ -35,7 +35,7 @@ Izz = aircraft.inertia.Izz;
 Ixz = aircraft.inertia.Ixz;
 
 %-------------------------------
-% Static aerodynamic coefficients
+%Static aerodynamic coefficients
 %-------------------------------
 % All characteristics assumed linear
 CL0 = aircraft.aerodynamic.CL0;
@@ -66,9 +66,9 @@ CYp = aircraft.aerodynamic.CYp;
 Clp = aircraft.aerodynamic.Clp; 
 Cnp = aircraft.aerodynamic.Cnp; 
 
-%------------------------------
+%% ------------------------------
 % Aerodynamic effects of control
-%------------------------------
+% ------------------------------
 CLde = aircraft.aerodynamic.CLde;
 CYdr = aircraft.aerodynamic.CYdr;
 Cmde = aircraft.aerodynamic.Cmde; 
@@ -284,6 +284,7 @@ dynamics = [v_dot; w_dot; r_dot; q_dot];
 dyn_func = Function('dynamics', {state, control}, {dynamics});
 
 %compute dynamics state Jacobian
+%d_jacobian = dynamics.jacobian(state);
 d_jacobian = dynamics.jacobian(state);
 dyn_jac = Function('dyn_jacobian',{state, control}, {d_jacobian});
 
@@ -292,7 +293,7 @@ X = SX.sym('X',13);
 U = SX.sym('U',3);
 dT = SX.sym('dT');
 
-%get symbolic expression for an integrator
+% get symbolic expression for an integrator
 integrator = RK4_sym(X, U, dyn_func, dT);
 RK4_INT = Function('RK4', {X,U,dT},{integrator});
 
@@ -452,10 +453,14 @@ end
 %Runge-Kutta 4th-order symbolic integration method
 function [x_h] = RK4_sym(x, u, f, h)
 % this integrator is problem specific
-k1 = f({x,u});
-k2 = f({x + 0.5 * h * k1{1},u});
-k3 = f({x + 0.5 * h * k2{1},u});
-k4 = f({x + h * k3{1},u});
+%k1 = f({x,u});
+%k2 = f({x + 0.5 * h * k1{1},u});
+%k3 = f({x + 0.5 * h * k2{1},u});
+%k4 = f({x + h * k3{1},u});
+k1 = f(x,u);
+k2 = f(x + 0.5 * h * k1{1},u);
+k3 = f(x + 0.5 * h * k2{1},u);
+k4 = f(x + h * k3{1},u);
 
 x_h = x + (h/6) * (k1{1} + 2*k2{1} + 2*k3{1} + k4{1});
 end
