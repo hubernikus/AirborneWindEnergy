@@ -150,9 +150,6 @@ def kite_sim(aircraft, params):
         T_START = params['t_span'][0]
         T_FINISH = params['t_span'][1]
         DT = params['t_span'][2]
-        print(T_START)
-        print(T_FINISH)
-        print(DT)
         assert(T_START < T_FINISH), 'ERROR: T_START > T_FINISH'
  
     
