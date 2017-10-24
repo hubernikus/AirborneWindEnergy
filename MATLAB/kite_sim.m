@@ -116,12 +116,11 @@ end
 if(isfield(params, 'int_type'))
     if(isequal(params.int_type,'cvodes'))
         USE_CVODES = 1;
-    else if (isequal(params.int_type, 'rk4'))
-            USE_CVODES = 0;
-        else
-            fprintf(2, 'ERROR: Unknown integrator type: [%s] \n', params.int_type);
-            error('Use "cvodes" or "rk4" instead');
-        end
+    elseif (isequal(params.int_type, 'rk4'))
+        USE_CVODES = 0;
+    else
+        fprintf(2, 'ERROR: Unknown integrator type: [%s] \n', params.int_type);
+        error('Use "cvodes" or "rk4" instead');
     end
 end
 
@@ -281,6 +280,7 @@ state = [v; w; r; q];
 control = [T; dE; dR];
 dynamics = [v_dot; w_dot; r_dot; q_dot];
 
+
 dyn_func = Function('dynamics', {state, control}, {dynamics});
 
 %compute dynamics state Jacobian
@@ -294,11 +294,11 @@ U = SX.sym('U',3);
 dT = SX.sym('dT');
 
 % get symbolic expression for an integrator
-integrator = RK4_sym(X, U, dyn_func, dT);
-RK4_INT = Function('RK4', {X,U,dT},{integrator});
+integrator_RK4 = RK4_sym(X, U, dyn_func, dT);
+RK4_INT = Function('RK4', {X,U,dT},{integrator_RK4});
 
 %get Jacobian of the RK4 Integrator
-integrator_jacobian = integrator.jacobian(X);
+integrator_jacobian = integrator_RK4.jacobian(X);
 rk4_jacobian = Function('RK4_JACOBIAN', {X, U, dT}, {integrator_jacobian});
 
 h = DT;
@@ -308,7 +308,7 @@ u0 = U0;
 %CVODES integrator
 ode = struct('x',state, 'p',control, 'ode',dynamics);
 opts = struct('tf', h);
-CVODES_INT = casadi.integrator('CVODES_INT','cvodes', ode, opts);
+CVODES_INT = integrator('CVODES_INT','cvodes', ode, opts);
 
 aoa_func = Function('AoA',{v},{aoa});
 ss_func = Function('SS',{v},{ss});
@@ -317,11 +317,12 @@ ss_func = Function('SS',{v},{ss});
 if(USE_CVODES)
     NUM.INT = CVODES_INT;
 else
+    fprintf('rk4_int is chosen. Different syntax for evaluation. \n')
     NUM.INT = RK4_INT;
 end
 
 %Symbolic expression for the model
-SYM.INT = integrator;
+SYM.INT = integrator_RK4;
 SYM.DYNAMICS = dynamics;
 SYM.DYN_JAC = d_jacobian;
 

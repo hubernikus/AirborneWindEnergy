@@ -1,4 +1,13 @@
 %create kite model
+clc; close all; clear variables; 
+
+% Add casadi to path
+addpath('/home/lukas/Software/casadi/casadi-matlabR2014a-v3.2.3')
+import casadi.*
+
+% add yaml to path
+addpath(genpath('/home/lukas/Software/MATLAB/AddOns/YAMLMatlab_0.4.3'))
+
 aircraft = ReadYaml('umx_radian.yaml');
 parameters.simulation = 0;
 parameters.plot = 0;
@@ -19,16 +28,19 @@ parameters.u0 = [0;0;0];
 x0 = parameters.x0;
 u0 = parameters.u0;
 dynamics = num.DYN_FUNC;
-res = dynamics({x0,u0});
-res1 = res{1}
+res = dynamics(x0,u0); % x0 - state (13,1), u0 - control (3,1)
+res1 = full(res)
 
 % #2 - Jacobian
-jacobian = num.DYN_JACOBIAN;
-res = jacobian({x0, u0});
+jacobian_num= num.DYN_JACOBIAN;
+res = jacobian_num(x0, u0);
 res2 = res{1}
 
 % #3 - Integrator
-integrator = num.INT;
-out = integrator(struct('x0',x0, 'p',u0));
+integrator_num = num.INT;
+
+%
+out = integrator_num('x0',x0,'p',u0);
+
 res3 = full(out.xf)
 

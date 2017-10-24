@@ -1,25 +1,13 @@
 import quatlib 
 
-import numpy as np
-import numpy.linalg as LA
-
-#from math import exp, sin, cos, asin, acos, tan, atan2, pi, sqrt
-
 import matplotlib.pyplot as plt
 
 # import casadi library
-#from sys import path
-#path.aPppend("/home/lukas/Software/casadi/casadi-py35-np1.9.1-v3.2.3-64bit")
 from casadi import *
-from casadi import cross, dot
-#import casadi as casadi
-
 
 def kite_sim(aircraft, params):
-    #print('kite_sim started \n')
     #function [NUM, FLOG, SYM] = kite_sim(aircraft, params)
     #casadi based kite dynamics simulation
-    
     
     # -------------------------
     # Enviromental constants
@@ -275,7 +263,7 @@ def kite_sim(aircraft, params):
     T_tmp = quat_mul(quat_inv(q_aoa), vertcat(SX([0]),Maero) )
     Trot = quat_mul(T_tmp, q_aoa)
     Maero = Trot[1:4]
-    a = mtimes(J,w)
+
     w_dot = mtimes( inv(J) , (Maero - cross(w, mtimes(J,w) ) ) ) 
     
     #-----------------------------
@@ -284,7 +272,7 @@ def kite_sim(aircraft, params):
     # Aircraft position in the IRF
     qv = quat_mul(q, vertcat(SX([0]),v))
     qv_q = quat_mul(qv, quat_inv(q))
-    r_dot = qv_q[0:3]
+    r_dot = qv_q[1:4]
     
     #-----------------------------
     #Kinematic Equations: Attitude
@@ -312,11 +300,11 @@ def kite_sim(aircraft, params):
     dT = SX.sym('dT')
     
     # get symbolic expression for an integrator
-    integratorFunc = RK4_sym(X, U, dyn_func, dT)
-    RK4_INT = Function('RK4', [X,U,dT],[integratorFunc],['X','U','dT'],['integratorFunc'])
+    integrator_RK4 = RK4_sym(X, U, dyn_func, dT)
+    RK4_INT = Function('RK4', [X,U,dT],[integrator_RK4],['X','U','dT'],['integratorFunc'])
 
     #get Jacobian of the RK4 Integrator
-    integrator_jacobian = jacobian(integratorFunc,X)
+    integrator_jacobian = jacobian(integrator_RK4,X)
     rk4_jacobian = Function('RK4_JACOBIAN', [X, U, dT], [integrator_jacobian],['X', 'U', 'dT'], ['integrator_jacobian'])
     
     h = DT
@@ -343,7 +331,7 @@ def kite_sim(aircraft, params):
     
     #Symbolic expression for the model
     SYM = {}
-    SYM['INT']= integratorFunc
+    SYM['INT']= integrator_RK4
     SYM['DYNAMICS'] = dynamics
     SYM['DYN_JAC'] = d_jacobian
     
@@ -360,7 +348,8 @@ def kite_sim(aircraft, params):
     
     if(VR_SIM):
         #create simulation scene
-        cene = CreateScene('BackView',1)
+        print('TODO: implement Backview')
+        #scene = CreateScene('BackView',1)
     
     
     #-----------------------------
@@ -376,6 +365,7 @@ def kite_sim(aircraft, params):
         res = []
         while (t <= T_FINISH):
             #simulation loop
+            print('Simulation looop')
             #logging data
             #log = np.append(np.append(log, x0), t)
             log = vertcat(log,x0,t)
