@@ -206,6 +206,7 @@ for k = start_sample:start_sample + points - 1
     res_log = [res_log, res];
     p_norms = [p_norms, norm(real(P_est), 2)];
 end
+quat2eul
 
 %%
 idx_plot = start_sample:(start_sample + points);

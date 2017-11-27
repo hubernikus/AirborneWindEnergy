@@ -1,0 +1,1405 @@
+Python 3.5.2 (default, Sep 14 2017, 22:51:06) 
+Type 'copyright', 'credits' or 'license' for more information
+IPython 6.0.0 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: 
+In [2]: 
+In [3]: 
+In [4]: """
+   ...: First Aircraft simulation
+   ...: """
+   ...: import numpy as np
+   ...: import matplotlib.pyplot as plt
+   ...: from matplotlib.animation import FuncAnimation
+   ...: 
+   ...: # Add casadi to path
+   ...: from casadi import * # casadi library
+   ...: 
+   ...: ...
+   ...:     line_yaw.set_data(time, [eul[i][2] for i in range(len(eul))])
+   ...: 
+   ...:     return  line_x, line_z,  line_y, line_pitch, line_yaw, line_roll
+   ...: 
+   ...: #ani = FuncAnimation(fig, update_limitCycle, frames=np.ones(int((t_final-t_start)/dt))*dt,
+   ...:                     #init_func=init, blit=True)
+   ...: ani = FuncAnimation(fig, update_aircraft, frames=np.ones(int((t_final-t_start)/dt))*dt,
+   ...:                     init_func=init, blit=True)
+   ...: 
+   ...: plt.show()
+x: [0, 0, 3]   vel: [1.5, 0, 0]
+x: [0.567513, 0.00502094, 2.47147]   vel: [10.2204, 0.51981, -2.29083]
+x: [1.49007, 0.0211207, 1.96267]   vel: [10.1324, 1.52321, -1.056]
+x: [2.20998, 0.0441454, 1.35493]   vel: [7.78424, 1.97966, -2.43303]
+x: [2.51462, 0.111477, 0.680644]   vel: [5.64237, 2.3919, -3.28498]
+x: [2.53025, 0.278163, 0.0291117]   vel: [5.27454, 2.93983, -2.67611]
+x: [2.37115, 0.550494, -0.529573]   vel: [5.14656, 2.9953, -2.00997]
+x: [2.07664, 0.89562, -0.93828]   vel: [5.1201, 2.7162, -1.57158]
+x: [1.6905, 1.27973, -1.16421]   vel: [5.24221, 2.34461, -1.27481]
+x: [1.25143, 1.67134, -1.1923]   vel: [5.55186, 1.99842, -1.09779]
+x: [0.790051, 2.03459, -1.01302]   vel: [6.04639, 1.74967, -1.04696]
+x: [0.340283, 2.31871, -0.618164]   vel: [6.65966, 1.73253, -1.10798]
+x: [-0.0440629, 2.451, -0.0147262]   vel: [7.29421, 2.11055, -1.20697]
+x: [-0.284348, 2.34732, 0.743016]   vel: [7.89503, 2.81142, -1.22489]
+x: [-0.304429, 1.94959, 1.52637]   vel: [8.54498, 3.31875, -1.12609]
+x: [-0.0798394, 1.27254, 2.15096]   vel: [9.27351, 3.1221, -1.01871]
+x: [0.342758, 0.422657, 2.44213]   vel: [9.75336, 2.52446, -0.954169]
+
+In [5]: import quatlib 
+   ...: 
+   ...: import matplotlib.pyplot as plt
+   ...: import numpy as np
+   ...: 
+   ...: # import casadi library
+   ...: from casadi import *
+   ...: 
+   ...: 
+   ...: import yaml # import yaml files
+   ...: ...
+   ...: # steadyState_withPlot(vel)
+   ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+   ...: 
+   ...: # vel = 13
+   ...: # steadyState_withPlot(vel)
+   ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+   ...: 
+   ...: plt.show()
+   ...: 
+   ...: print('End script')
+Start script
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-5-174d392c2c4a> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737eux''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737eux''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    218 figDir =  '../fig/'
+    219 
+--> 220 elevator,alpha, vel, T = steadyLevel_longitudial(aircraft)
+    221 
+    222 plt.figure()
+
+TypeError: steadyLevel_longitudial() takes 0 positional arguments but 1 was given
+
+In [6]: import quatlib 
+   ...: 
+   ...: import matplotlib.pyplot as plt
+   ...: import numpy as np
+   ...: 
+   ...: # import casadi library
+   ...: from casadi import *
+   ...: 
+   ...: 
+   ...: import yaml # import yaml files
+   ...: ...
+   ...: # steadyState_withPlot(vel)
+   ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+   ...: 
+   ...: # vel = 13
+   ...: # steadyState_withPlot(vel)
+   ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+   ...: 
+   ...: plt.show()
+   ...: 
+   ...: print('End script')
+Start script
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+<ipython-input-6-fe2e183ec3de> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737rGg''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737rGg''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    218 figDir =  '../fig/'
+    219 
+--> 220 elevator,alpha, vel, T = steadyLevel_longitudial()
+    221 
+    222 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    101     alpha = -(Cm0 * Cmde*elevator)/Cma
+    102 
+--> 103     vel2 = 2*mas*g/(S*ro8(1-tan(alpha))) #velocity squared
+    104 
+    105     vel = np.array([cos(alpha),0,sin(alpha)])*sqrt(vel2)
+
+NameError: name 'mas' is not defined
+
+In [7]: import quatlib 
+   ...: 
+   ...: from math import sin, cos, tan, atan2
+   ...: import matplotlib.pyplot as plt
+   ...: import numpy as np
+   ...: 
+   ...: 
+   ...: # import casadi library
+   ...: #from casadi import *
+   ...: 
+   ...: ...
+   ...: # steadyState_withPlot(vel)
+   ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+   ...: 
+   ...: # vel = 13
+   ...: # steadyState_withPlot(vel)
+   ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+   ...: 
+   ...: plt.show()
+   ...: 
+   ...: print('End script')
+Start script
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+<ipython-input-7-acc95d0ded7f> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py297376gc''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py297376gc''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    220 figDir =  '../fig/'
+    221 
+--> 222 elevator,alpha, vel, T = steadyLevel_longitudial()
+    223 
+    224 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    103     alpha = -(Cm0 * Cmde*elevator)/Cma
+    104 
+--> 105     vel2 = 2*mas*g/(S*ro8(1-tan(alpha))) #velocity squared
+    106 
+    107     vel = np.array([cos(alpha),0,sin(alpha)])*sqrt(vel2)
+
+NameError: name 'mas' is not defined
+
+In [8]: import quatlib 
+   ...: 
+   ...: from math import sin, cos, tan, atan2
+   ...: import matplotlib.pyplot as plt
+   ...: import numpy as np
+   ...: 
+   ...: 
+   ...: # import casadi library
+   ...: #from casadi import *
+   ...: 
+   ...: ...
+   ...: # steadyState_withPlot(vel)
+   ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+   ...: 
+   ...: # vel = 13alp
+   ...: # steadyState_withPlot(vel)
+   ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+   ...: 
+   ...: plt.show()
+   ...: 
+   ...: print('End script')
+Start script
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-8-e4568437a0c9> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737V2v''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737V2v''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    220 figDir =  '../fig/'
+    221 
+--> 222 elevator,alpha, vel, T = steadyLevel_longitudial()
+    223 
+    224 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    103     alpha = -(Cm0 * Cmde*elevator)/Cma
+    104 
+--> 105     vel2 = 2*Mass*g/(S*ro*(1-tan(alpha))) #velocity squared
+    106 
+    107     vel = np.array([cos(alpha),0,sin(alpha)])*sqrt(vel2)
+
+TypeError: only length-1 arrays can be converted to Python scalars
+
+In [9]: alpha
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+<ipython-input-9-9f9f90dbe3e5> in <module>()
+----> 1 alpha
+
+NameError: name 'alpha' is not defined
+
+In [10]: elevator
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+<ipython-input-10-96e505eb53b2> in <module>()
+----> 1 elevator
+
+NameError: name 'elevator' is not defined
+
+In [11]: alpha
+---------------------------------------------------------------------------
+NameError                                 Traceback (most recent call last)
+<ipython-input-11-9f9f90dbe3e5> in <module>()
+----> 1 alpha
+
+NameError: name 'alpha' is not defined
+
+In [12]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-12-5549aec7e3ef> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py297378b2''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py297378b2''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    221 figDir =  '../fig/'
+    222 
+--> 223 elevator,alpha, vel, T = steadyLevel_longitudial()
+    224 
+    225 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    103     alpha = -(Cm0 * Cmde*elevator)/Cma
+    104 
+--> 105     vel2 = 2*Mass*g/(S*ro*(1-tan(alpha))) #velocity squared
+    106 
+    107     vel = np.array([cos(alpha),0,sin(alpha)])*sqrt(vel2)
+
+TypeError: only length-1 arrays can be converted to Python scalars
+
+In [13]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+> /home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py(105)steadyLevel_longitudial()
+-> vel2 = 2*Mass*g/(S*ro*(1-tan(alpha))) #velocity squared
+(Pdb) Mass
+0.044
+(Pdb) alpha
+array([ 0.01594463,  0.01240138,  0.00885813,  0.00531488,  0.00177163,
+       -0.00177163, -0.00531488, -0.00885813, -0.01240138, -0.01594463])
+(Pdb) tan(alpha)
+*** TypeError: only length-1 arrays can be converted to Python scalars
+(Pdb) import quatlib 
+ ...: 
+ ...: from math import sin, cos, tan, atan2
+ ...: import matplotlib.pyplot as plt
+ ...: import numpy as np
+ ...: 
+ ...: 
+ ...: # import casadi library
+ ...: #from casadi import *
+ ...: 
+ ...: ...
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: # vel = 13
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: plt.show()
+ ...: 
+ ...: print('End script')
+<_ast.Expr object at 0x7effdb972b70>
+Start script
+*** TypeError: tile() takes 2 positional arguments but 3 were given
+(Pdb) import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) 
+*** SyntaxError: invalid syntax
+(Pdb) 
+*** SyntaxError: invalid syntax
+(Pdb) vel2
+*** NameError: name 'vel2' is not defined
+(Pdb)   C-c C-c
+--KeyboardInterrupt--
+(Pdb)   C-c C-c
+--KeyboardInterrupt--
+(Pdb) 
+*** NameError: name 'vel2' is not defined
+(Pdb)   C-c C-c
+--KeyboardInterrupt--
+(Pdb) exit()
+---------------------------------------------------------------------------
+BdbQuit                                   Traceback (most recent call last)
+<ipython-input-13-3ba2cf360c31> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737vYk''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737vYk''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    221 figDir =  '../fig/'
+    222 
+--> 223 elevator,alpha, vel, T = steadyLevel_longitudial()
+    224 
+    225 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    103 
+    104     alpha = -(Cm0 * Cmde*elevator)/Cma
+--> 105     import pdb; pdb.set_trace() ## DEBUG ##
+    106     vel2 = 2*Mass*g/(S*ro*(1-np.tan(alpha))) #velocity squared
+    107 
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    103 
+    104     alpha = -(Cm0 * Cmde*elevator)/Cma
+--> 105     import pdb; pdb.set_trace() ## DEBUG ##
+    106     vel2 = 2*Mass*g/(S*ro*(1-np.tan(alpha))) #velocity squared
+    107 
+
+/usr/lib/python3.5/bdb.py in trace_dispatch(self, frame, event, arg)
+     46             return # None
+     47         if event == 'line':
+---> 48             return self.dispatch_line(frame)
+     49         if event == 'call':
+     50             return self.dispatch_call(frame, arg)
+
+/usr/lib/python3.5/bdb.py in dispatch_line(self, frame)
+     64     def dispatch_line(self, frame):
+     65         if self.stop_here(frame) or self.break_here(frame):
+---> 66             self.user_line(frame)
+     67             if self.quitting: raise BdbQuit
+     68         return self.trace_dispatch
+
+BdbQuit: 
+
+In [14]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+> /home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py(106)steadyLevel_longitudial()
+-> vel2 = 2*Mass*g/(S*ro*(1-np.tan(alpha))) #velocity squared
+(Pdb) import quatlib 
+ ...: 
+ ...: from math import sin, cos, tan, atan2
+ ...: import matplotlib.pyplot as plt
+ ...: import numpy as np
+ ...: 
+ ...: 
+ ...: # import casadi library
+ ...: #from casadi import *
+ ...: 
+ ...: ...
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: # vel = 13
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: plt.show()
+ ...: 
+ ...: print('End script')
+<_ast.Expr object at 0x7effdba11b00>
+Start script
+*** TypeError: tile() takes 2 positional arguments but 3 were given
+(Pdb) import quatlib 
+ ...: 
+ ...: from math import sin, cos, tan, atan2
+ ...: import matplotlib.pyplot as plt
+ ...: import numpy as np
+ ...: 
+ ...: 
+ ...: # import casadi library
+ ...: #from casadi import *
+ ...: 
+ ...: ...
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: # vel = 13
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: plt.show()
+ ...: 
+ ...: print('End script')
+<_ast.Expr object at 0x7effdb960550>
+Start script
+*** TypeError: tile() takes 2 positional arguments but 3 were given
+(Pdb) exit()
+---------------------------------------------------------------------------
+BdbQuit                                   Traceback (most recent call last)
+<ipython-input-14-66dc99281583> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737n2F''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737n2F''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    221 figDir =  '../fig/'
+    222 
+--> 223 elevator,alpha, vel, T = steadyLevel_longitudial()
+    224 
+    225 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    104     alpha = -(Cm0 * Cmde*elevator)/Cma
+    105     #import pdb; pdb.set_trace() ## DEBUG ##
+--> 106     vel2 = 2*Mass*g/(S*ro*(1-np.tan(alpha))) #velocity squared
+    107 
+    108     vel = np.tile(np.array([[np.cos(alpha),0,np.sin(alpha)]]),1,N_res)*np.tile(sqrt(vel2),3,1)
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    104     alpha = -(Cm0 * Cmde*elevator)/Cma
+    105     #import pdb; pdb.set_trace() ## DEBUG ##
+--> 106     vel2 = 2*Mass*g/(S*ro*(1-np.tan(alpha))) #velocity squared
+    107 
+    108     vel = np.tile(np.array([[np.cos(alpha),0,np.sin(alpha)]]),1,N_res)*np.tile(sqrt(vel2),3,1)
+
+/usr/lib/python3.5/bdb.py in trace_dispatch(self, frame, event, arg)
+     46             return # None
+     47         if event == 'line':
+---> 48             return self.dispatch_line(frame)
+     49         if event == 'call':
+     50             return self.dispatch_call(frame, arg)
+
+/usr/lib/python3.5/bdb.py in dispatch_line(self, frame)
+     64     def dispatch_line(self, frame):
+     65         if self.stop_here(frame) or self.break_here(frame):
+---> 66             self.user_line(frame)
+     67             if self.quitting: raise BdbQuit
+     68         return self.trace_dispatch
+
+BdbQuit: 
+
+In [15]:   import quatlib 
+      ...: 
+      ...: from math import sin, cos, tan, atan2
+      ...: import matplotlib.pyplot as plt
+      ...: import numpy as np
+      ...: 
+      ...: 
+      ...: # import casadi library
+      ...: #from casadi import *
+      ...: 
+      ...: ...
+      ...: # steadyState_withPlot(vel)
+      ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+      ...: 
+      ...: # vel = 13
+      ...: # steadyState_withPlot(vel)
+      ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+      ...: 
+      ...: plt.show()
+      ...: 
+      ...: print('End script')
+
+KeyboardInterrupt escaped interact()
+
+
+In [15]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-15-e215ca05ccb9> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py2973716e''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py2973716e''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    221 figDir =  '../fig/'
+    222 
+--> 223 elevator,alpha, vel, T = steadyLevel_longitudial()
+    224 
+    225 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    106     vel2 = 2*Mass*g/(S*ro*(1-np.tan(alpha))) #velocity squared
+    107 
+--> 108     vel = np.tile(np.array([[np.cos(alpha),0,np.sin(alpha)]]),1,N_res)*np.tile(sqrt(vel2),3,1)
+    109 
+    110     T = S*ro*vel2/(2*np.cos(alpha))
+
+TypeError: tile() takes 2 positional arguments but 3 were given
+
+In [16]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+> /home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py(109)steadyLevel_longitudial()
+-> vel = np.tile(np.array([[np.cos(alpha),0,np.sin(alpha)]]),1,N_res)*np.tile(sqrt(vel2),3,1)
+(Pdb) 
+In [16]: 
+(Pdb) *** SyntaxError: invalid syntax
+(Pdb) np.tile(np.array([[np.cos(alpha),0,np.sin(alpha)]]),1,N_res)
+*** TypeError: tile() takes 2 positional arguments but 3 were given
+(Pdb) np.tile(np.array([[np.cos(alpha),0,np.sin(alpha)]]),[1,N_res])
+array([[ array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]),
+        array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]),
+        array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]),
+        array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]),
+        array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]),
+        array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]),
+        array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]),
+        array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]),
+        array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]),
+        array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289ex]),
+        0,
+        array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396])]], dtype=object)
+(Pdb) import quatlib 
+ ...: 
+ ...: from math import sin, cos, tan, atan2
+ ...: import matplotlib.pyplot as plt
+ ...: import numpy as np
+ ...: 
+ ...: 
+ ...: # import casadi library
+ ...: #from casadi import *
+ ...: 
+ ...: ...
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: # vel = 13
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: plt.show()
+ ...: 
+ ...: print('End script')
+<_ast.Expr object at 0x7effdb8ea198>
+Start script
+*** TypeError: tile() takes 2 positional arguments but 3 were given
+(Pdb) exit()
+---------------------------------------------------------------------------
+BdbQuit                                   Traceback (most recent call last)
+<ipython-input-16-e86850597a31> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737cgl''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737cgl''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    222 figDir =  '../fig/'
+    223 
+--> 224 elevator,alpha, vel, T = steadyLevel_longitudial()
+    225 
+    226 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.array([np.cos(alpha),0,np.sin(alpha)])*np.tile(sqrt(vel2),3,1)
+    110 
+    111     T = S*ro*vel2/(2*np.cos(alpha))
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.array([np.cos(alpha),0,np.sin(alpha)])*np.tile(sqrt(vel2),3,1)
+    110 
+    111     T = S*ro*vel2/(2*np.cos(alpha))
+
+/usr/lib/python3.5/bdb.py in trace_dispatch(self, frame, event, arg)
+     46             return # None
+     47         if event == 'line':
+---> 48             return self.dispatch_line(frame)
+     49         if event == 'call':
+     50             return self.dispatch_call(frame, arg)
+
+/usr/lib/python3.5/bdb.py in dispatch_line(self, frame)
+     64     def dispatch_line(self, frame):
+     65         if self.stop_here(frame) or self.break_here(frame):
+---> 66             self.user_line(frame)
+     67             if self.quitting: raise BdbQuit
+     68         return self.trace_dispatch
+
+BdbQuit: 
+
+In [17]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+> /home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py(109)steadyLevel_longitudial()
+-> vel = np.array([np.cos(alpha),0,np.sin(alpha)])*np.tile(sqrt(vel2),3,1)
+(Pdb) np.array([np.cos(alpha),0,np.sin(alpha)])
+array([ array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289]),
+       0,
+       array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396])], dtype=object)
+(Pdb) import quatlib 
+ ...: 
+ ...: from math import sin, cos, tan, atan2
+ ...: import matplotlib.pyplot as plt
+ ...: import numpy as np
+ ...: 
+ ...: 
+ ...: # import casadi library
+ ...: #from casadi import *
+ ...: 
+ ...: ...
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: # vel = 13
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: e
+ ...: plt.show()
+ ...: 
+ ...: print('End script')
+<_ast.Expr object at 0x7effdb91a198>
+Start script
+*** NameError: name 'zeros' is not defined
+(Pdb) exit()
+---------------------------------------------------------------------------
+BdbQuit                                   Traceback (most recent call last)
+<ipython-input-17-ec5d9548af16> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737p4T''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737p4T''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    222 figDir =  '../fig/'
+    223 
+--> 224 elevator,alpha, vel, T = steadyLevel_longitudial()
+    225 
+    226 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha)) *np.tile(sqrt(vel2),3,1)
+    110 
+    111     T = S*ro*vel2/(2*np.cos(alpha))
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha)) *np.tile(sqrt(vel2),3,1)
+    110 
+    111     T = S*ro*vel2/(2*np.cos(alpha))
+
+/usr/lib/python3.5/bdb.py in trace_dispatch(self, frame, event, arg)
+     46             return # None
+     47         if event == 'line':
+---> 48             return self.dispatch_line(frame)
+     49         if event == 'call':
+     50             return self.dispatch_call(frame, arg)
+
+/usr/lib/python3.5/bdb.py in dispatch_line(self, frame)
+     64     def dispatch_line(self, frame):
+     65         if self.stop_here(frame) or self.break_here(frame):
+---> 66             self.user_line(frame)
+     67             if self.quitting: raise BdbQuit
+     68         return self.trace_dispatch
+
+BdbQuit: 
+
+In [18]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+> /home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py(109)steadyLevel_longitudial()
+-> vel = np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha)) *np.tile(sqrt(vel2),3,1)
+(Pdb) np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha))
+*** NameError: name 'zeros' is not defined
+(Pdb) np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha)))
+*** SyntaxError: invalid syntax
+(Pdb) np.vstack(np.cos(alpha),np.zeros(N_res,1),np.sin(alpha)))
+*** SyntaxError: invalid syntax
+(Pdb) np.zeros(N_res,1)
+*** TypeError: data type not understood
+(Pdb) import quatlib 
+ ...: 
+ ...: from math import sin, cos, tan, atan2exit
+ ...: import matplotlib.pyplot as plt
+ ...: import numpy as np
+ ...: 
+ ...: 
+ ...: # import casadi library
+ ...: #from casadi import *
+ ...: 
+ ...: ...
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: # vel = 13
+ ...: # steadyState_withPlot(vel)
+ ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+ ...: 
+ ...: plt.show()
+ ...: 
+ ...: print('End script')
+<_ast.Expr object at 0x7effdb8cd3c8>
+Start script
+*** NameError: name 'zeros' is not defined
+(Pdb) exit()
+---------------------------------------------------------------------------
+BdbQuit                                   Traceback (most recent call last)
+<ipython-input-18-ef4ac59c0652> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737FPu''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737FPu''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    222 figDir =  '../fig/'
+    223 
+--> 224 elevator,alpha, vel, T = steadyLevel_longitudial()
+    225 
+    226 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha)) *np.tile(sqrt(vel2),3,1)
+    110 
+    111     T = S*ro*vel2/(2*np.cos(alpha))
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha)) *np.tile(sqrt(vel2),3,1)
+    110 
+    111     T = S*ro*vel2/(2*np.cos(alpha))
+
+/usr/lib/python3.5/bdb.py in trace_dispatch(self, frame, event, arg)
+     46             return # None
+     47         if event == 'line':
+---> 48             return self.dispatch_line(frame)
+     49         if event == 'call':
+     50             return self.dispatch_call(frame, arg)
+
+/usr/lib/python3.5/bdb.py in dispatch_line(self, frame)
+     64     def dispatch_line(self, frame):
+     65         if self.stop_here(frame) or self.break_here(frame):
+---> 66             self.user_line(frame)
+     67             if self.quitting: raise BdbQuit
+     68         return self.trace_dispatch
+
+BdbQuit: 
+
+In [19]:   import quatlib 
+      ...: 
+      ...: from math import sin, cos, tan, atan2
+      ...: import matplotlib.pyplot as plt
+      ...: import numpy as np
+      ...: 
+      ...: 
+      ...: # import casadi library
+      ...: #from casadi import *
+      ...: 
+      ...: ...
+      ...: # steadyState_withPlot(vel)
+      ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+      ...: 
+      ...: # vel = 13
+      ...: # steadyState_withPlot(vel)
+      ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+      ...: 
+      ...: plt.show()
+      ...: 
+      ...: print('End script')
+
+KeyboardInterrupt escaped interact()
+
+
+In [19]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+> /home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py(109)steadyLevel_longitudial()
+-> vel = np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha)) *np.tile(sqrt(vel2),3,1)
+(Pdb) import numpy as np
+(Pdb) nexit
+*** NameError: name 'nexit' is not defined
+(Pdb) exit
+---------------------------------------------------------------------------
+BdbQuit                                   Traceback (most recent call last)
+<ipython-input-19-8fdb4d1ccf1b> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737s00''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737s00''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    222 figDir =  '../fig/'
+    223 
+--> 224 elevator,alpha, vel, T = steadyLevel_longitudial()
+    225 
+    226 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha)) *np.tile(sqrt(vel2),3,1)
+    110 
+    111     T = S*ro*vel2/(2*np.cos(alpha))
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.vstack(np.cos(alpha),zeros(N_res,1),np.sin(alpha)) *np.tile(sqrt(vel2),3,1)
+    110 
+    111     T = S*ro*vel2/(2*np.cos(alpha))
+
+/usr/lib/python3.5/bdb.py in trace_dispatch(self, frame, event, arg)
+     46             return # None
+     47         if event == 'line':
+---> 48             return self.dispatch_line(frame)
+     49         if event == 'call':
+     50             return self.dispatch_call(frame, arg)
+
+/usr/lib/python3.5/bdb.py in dispatch_line(self, frame)
+     65         if self.stop_here(frame) or self.break_here(frame):
+     66             self.user_line(frame)
+---> 67             if self.quitting: raise BdbQuit
+     68         return self.trace_dispatch
+     69 
+
+BdbQuit: 
+
+In [20]: import numpy as np
+
+In [21]: np.zeros(3,1)
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-21-e64fecd9de02> in <module>()
+----> 1 np.zeros(3,1)
+
+TypeError: data type not understood
+
+In [22]: np.zeros((5,1))
+Out[22]: 
+array([[ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.]])
+
+In [23]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+  File "/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py", line 110
+    np..tile(sqrt(vel2),3,1))
+       ^
+SyntaxError: invalid syntax
+
+
+In [24]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+> /home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py(109)steadyLevel_longitudial()
+-> vel = np.mulitply( np.vstack(np.cos(alpha),np.zeros((N_res,1),np.sin(alpha))),
+(Pdb) -> vel = np.mulitply( np.vstack(np.cos(alpha),np.zeros((N_res,1),np.sin(alpha))),
+(Pdb)   C-c C-c
+--KeyboardInterrupt--
+(Pdb)   C-c C-c
+--KeyboardInterrupt--
+(Pdb) exit
+---------------------------------------------------------------------------
+BdbQuit                                   Traceback (most recent call last)
+<ipython-input-24-d22246912152> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737U-G''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737U-G''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    223 figDir =  '../fig/'
+    224 
+--> 225 elevator,alpha, vel, T = steadyLevel_longitudial()
+    226 
+    227 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.mulitply( np.vstack(np.cos(alpha),np.zeros((N_res,1),np.sin(alpha))),
+    110                         np.tile(sqrt(vel2),3,1))
+    111 
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.mulitply( np.vstack(np.cos(alpha),np.zeros((N_res,1),np.sin(alpha))),
+    110                         np.tile(sqrt(vel2),3,1))
+    111 
+
+/usr/lib/python3.5/bdb.py in trace_dispatch(self, frame, event, arg)
+     46             return # None
+     47         if event == 'line':
+---> 48             return self.dispatch_line(frame)
+     49         if event == 'call':
+     50             return self.dispatch_call(frame, arg)
+
+/usr/lib/python3.5/bdb.py in dispatch_line(self, frame)
+     65         if self.stop_here(frame) or self.break_here(frame):
+     66             self.user_line(frame)
+---> 67             if self.quitting: raise BdbQuit
+     68         return self.trace_dispatch
+     69 
+
+BdbQuit: 
+
+In [25]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+<ipython-input-25-7e26ce9d0592> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737uST''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737uST''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    223 figDir =  '../fig/'
+    224 
+--> 225 elevator,alpha, vel, T = steadyLevel_longitudial()
+    226 
+    227 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.mulitply( np.vstack(np.cos(alpha),np.zeros((N_res,1),np.sin(alpha))),
+    110                         np.tile(sqrt(vel2),3,1))
+    111 
+
+AttributeError: module 'numpy' has no attribute 'mulitply'
+
+In [26]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-26-c06c4aaa1485> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py29737vFy''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py29737vFy''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    223 figDir =  '../fig/'
+    224 
+--> 225 elevator,alpha, vel, T = steadyLevel_longitudial()
+    226 
+    227 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     #import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.multiply( np.vstack(np.cos(alpha),np.zeros((N_res,1),np.sin(alpha))),
+    110                         np.tile(sqrt(vel2),3,1))
+    111 
+
+TypeError: data type not understood
+
+In [27]: import quatlib 
+    ...: 
+    ...: from math import sin, cos, tan, atan2
+    ...: import matplotlib.pyplot as plt
+    ...: import numpy as np
+    ...: 
+    ...: 
+    ...: # import casadi library
+    ...: #from casadi import *
+    ...: 
+    ...: ...
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: # vel = 13
+    ...: # steadyState_withPlot(vel)
+    ...: # plt.savefig(figDir + 'alphaOverVel{}.png'.format(vel))
+    ...: 
+    ...: plt.show()
+    ...: 
+    ...: print('End script')
+Start script
+> /home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py(109)steadyLevel_longitudial()
+-> vel = np.multiply( np.vstack(np.cos(alpha),np.zeros((N_res,1),np.sin(alpha))),
+(Pdb) np.cos(alpha)
+array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289])
+(Pdb) np.vstack(np.cos(alpha),np.zeros((N_res,1),np.sin(alpha))
+*** SyntaxError: unexpected EOF while parsing
+(Pdb) np.cos(alpha),np.zeros((N_res,1),np.sin(alpha)
+*** SyntaxError: unexpected EOF while parsing
+(Pdb) np.cos(alpha)
+array([ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+        0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289])
+(Pdb) np.zeros((N_res,1))
+array([[ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.]])
+(Pdb) np.cos(alpha),np.zeros((1,N_res),np.sin(alpha)
+*** SyntaxError: unexpected EOF while parsing
+(Pdb) np.vstack(np.cos(alpha),np.zeros((1,N_res),np.sin(alpha))
+*** SyntaxError: unexpected EOF while parsing
+(Pdb) np.vstacK(np.cos(alpha),np.sin(alpha)
+*** SyntaxError: unexpected EOF while parsing
+(Pdb) np.sin(alpha)
+array([ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+       -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396])
+(Pdb) np.hstacK(np.cos(alpha),np.sin(alpha)
+*** SyntaxError: unexpected EOF while parsing
+(Pdb) np.vstacK(np.cos(alpha),np.sin(alpha)
+*** SyntaxError: unexpected EOF while parsing
+(Pdb) np.vstacK(np.cos(alpha),np.sin(alpha))
+*** AttributeError: module 'numpy' has no attribute 'vstacK'
+(Pdb) np.vstack(np.cos(alpha),np.sin(alpha))
+*** TypeError: vstack() takes 1 positional argument but 2 were given
+(Pdb) np.vstack((np.cos(alpha),np.sin(alpha)))
+array([[ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+         0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289],
+       [ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+        -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396]])
+(Pdb) np.vstack((np.cos(alpha),np.sin(alpha),np.zeros(N_res,1)))
+*** TypeError: data type not understood
+(Pdb) np.zeros(N_res,1)
+*** TypeError: data type not understood
+(Pdb) np.zeros((N_res,1))
+array([[ 0.],
+       [ 0.],n
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.],
+       [ 0.]])
+(Pdb) np.zeros((1,N_res))exoi
+array([[ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]])
+(Pdb) np.vstack(( np.cos(alpha),np.sin(alpha),np.zeros((1,N_res)) ))
+
+array([[ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+         0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289],
+       [ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+        -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396],
+       [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
+         0.        ,  0.        ,  0.        ,  0.        ,  0.        ]])
+(Pdb) array([[ 0.99987289,  0.9999231 ,  0.99996077,  0.99998588,  0.99999843,
+         0.99999843,  0.99998588,  0.99996077,  0.9999231 ,  0.99987289],
+       [ 0.01594396,  0.01240106,  0.00885801,  0.00531485,  0.00177162,
+        -0.00177162, -0.00531485, -0.00885801, -0.01240106, -0.01594396],
+       [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
+         0.        ,  0.        ,  0.        ,  0.        ,  0.        ]])
+(Pdb) np.tile(
+*** SyntaxError: unexpected EOF while parsing
+(Pdb) np.tile([10,1],[1,2])
+array([[10,  1, 10,  1]])
+(Pdb) 
+exit
+array([[10,  1, 10,  1]])
+(Pdb) ---------------------------------------------------------------------------
+BdbQuit                                   Traceback (most recent call last)
+<ipython-input-27-618afec285a7> in <module>()
+----> 1 import codecs, os, ast;__pyfile = codecs.open('''/tmp/py297377jN''', encoding='''utf-8''');__code = __pyfile.read().encode('''utf-8''');__pyfile.close();os.remove('''/tmp/py297377jN''');__block = ast.parse(__code, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec');__last = __block.body[-1];__isexpr = isinstance(__last,ast.Expr);__block.body.pop() if __isexpr else None;exec(compile(__block, '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='exec'));eval(compile(ast.Expression(__last.value), '''/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py''', mode='eval')) if __isexpr else None
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in <module>()
+    223 figDir =  '../fig/'
+    224 
+--> 225 elevator,alpha, vel, T = steadyLevel_longitudial()
+    226 
+    227 plt.figure()
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.multiply( np.vstack(( np.cos(alpha),np.zeros((N_res,1)),np.sin(alpha) )),
+    110                         np.tile(sqrt(vel2),[3,1]) )
+    111 
+
+/home/lukas/Code/AirborneWindEnergy/python/equilibriumSearch_steadyMotion.py in steadyLevel_longitudial()
+    107 
+    108     import pdb; pdb.set_trace() ## DEBUG ##
+--> 109     vel = np.multiply( np.vstack(( np.cos(alpha),np.zeros((N_res,1)),np.sin(alpha) )),
+    110                         np.tile(sqrt(vel2),[3,1]) )
+    111 
+
+/usr/lib/python3.5/bdb.py in trace_dispatch(self, frame, event, arg)
+     46             return # None
+     47         if event == 'line':
+---> 48             return self.dispatch_line(frame)
+     49         if event == 'call':
+     50             return self.dispatch_call(frame, arg)
+
+/usr/lib/python3.5/bdb.py in dispatch_line(self, frame)
+     65         if self.stop_here(frame) or self.break_here(frame):
+     66             self.user_line(frame)
+---> 67             if self.quitting: raise BdbQuit
+     68         return self.trace_dispatch
+     69 
+
+BdbQuit: 
+
+In [28]: 

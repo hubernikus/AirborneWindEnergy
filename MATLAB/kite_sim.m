@@ -207,31 +207,32 @@ G_b = qG_q(2:4);
 %Propulsion force in BRF
 T_b = [T;0;0];
 
-%Tether force
-%value: using smooth ramp approximation
-Lt = 2.31; %tether length
-d_ = L2(r);
-%spring term
-%Rv = ((d_ - Lt)) * Heaviside(d_ - Lt, 1);
-Ks = 500 * Mass; %300 Ks: 800;
-Kd = 10 * Mass; %30 Kd: 500
-Rv = ((d_ - Lt));
-Rs = -Rv * (r / d_);
-%damping term
-qvi = quat_mul(q, [0; v]);
-qvi_q = quat_mul(qvi, quat_inv(q));
-vi = qvi_q(2:4);
-Rd = (-r / d_) * (r' * vi) / d_;
-R = ( Ks * Rs + Kd * Rd) * Heaviside(d_ - Lt, 1);
+% %Tether force
+% %value: using smooth ramp approximation
+% Lt = 2.31; %tether length
+% d_ = L2(r);
+% %spring term
+% %Rv = ((d_ - Lt)) * Heaviside(d_ - Lt, 1);
+% Ks = 500 * Mass; %300 Ks: 800;
+% Kd = 10 * Mass; %30 Kd: 500
+% Rv = ((d_ - Lt));
+% Rs = -Rv * (r / d_);
+% %damping term
+% qvi = quat_mul(q, [0; v]);
+% qvi_q = quat_mul(qvi, quat_inv(q));
+% vi = qvi_q(2:4);
+% Rd = (-r / d_) * (r' * vi) / d_;
+% R = ( Ks * Rs + Kd * Rd) * Heaviside(d_ - Lt, 1);
 
 %BRF
-qR = quat_mul(quat_inv(q),[0;R]);
-qR_q = quat_mul(qR, q);
-R_b = qR_q(2:4);
+%qR = quat_mul(quat_inv(q),[0;R]);
+%qR_q = quat_mul(qR, q);
+%R_b = qR_q(2:4);
 
 
 %Total external forces devided by glider's mass (linear acceleration)
-v_dot = (Faero_b + T_b  + R_b)/Mass + G_b  - cross(w,v);
+%v_dot = (Faero_b + T_b  + R_b)/Mass + G_b  - cross(w,v);
+v_dot = (Faero_b + T_b )/Mass + G_b  - cross(w,v);
 
 %-------------------------
 %Dynamic Equation: Moments
@@ -325,7 +326,6 @@ end
 SYM.INT = integrator_RK4;
 SYM.DYNAMICS = dynamics;
 SYM.DYN_JAC = d_jacobian;
-
 SYM.state = state;
 SYM.control = control;
 

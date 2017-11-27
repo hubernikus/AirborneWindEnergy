@@ -1,5 +1,3 @@
-import quatlib 
-
 import matplotlib.pyplot as plt
 
 # import casadi library
@@ -163,7 +161,7 @@ def kite_sim(aircraft, params):
     V2 = dot(v,v)
     
     ss = asin(v[1] / V) #side slip angle [rad] (v(3)/v(1)) // small angle assumption
-    aoa = atan2(v[2] , v[0])  #angle of attack definition [rad] (v(2)/L2(v))
+    aoa = atan2(v[2] , v[0])  # angle of attack definition [rad] (v(2)/L2(v))
     dyn_press = 0.5 * ro * V2 #dynamic pressure
     
     CD_w = CD0_w + (CL0 + CLa_w * aoa )**2 / (pi * e_o * AR) #wing drag coefficient
@@ -176,7 +174,7 @@ def kite_sim(aircraft, params):
             (0.25 * CLq * c * S * ro) * V * w[1] )
     DRAG = CD * dyn_press * S
     SF = ( (CYb * ss + CYdr * dR) * dyn_press * S +
-            0.25 * (CYr * w[2] + CYp * w[0]) * (b * ro * S) * V ) 
+            0.25 * (CYr * w[2] + CYp * w[0]) * (b * ro * S) * V )
     
     #Compute transformation betweeen WRF and BRF: qw_b
     #qw_b = q(aoa) * q(-ss)
@@ -219,24 +217,25 @@ def kite_sim(aircraft, params):
     Rv = ((d_ - Lt))
     Rs = -Rv * (r / d_)
     
-    #damping term
-    qvi = quat_mul(q, vertcat(SX([0]),v) )
-    #qvi = quat_mul(q, np.insert(v, 0, 0))
-    qvi_q = quat_mul(qvi, quat_inv(q))
-    vi = qvi_q[1:4]
-    # TODO: check line
-    Rd = (-r / d_) * dot(r,vi) / d_
-    R = ( Ks * Rs + Kd * Rd) * Heaviside(d_ - Lt, 1)
+    # #damping term
+    # qvi = quat_mul(q, vertcat(SX([0]),v) )
+    # #qvi = quat_mul(q, np.insert(v, 0, 0))
+    # qvi_q = quat_mul(qvi, quat_inv(q))
+    # vi = qvi_q[1:4]
+    # # TODO: check line
+    # Rd = (-r / d_) * dot(r,vi) / d_
+    # R = ( Ks * Rs + Kd * Rd) * Heaviside(d_ - Lt, 1)
     
     
-    #BRF
-    qR = quat_mul(quat_inv(q), vertcat(SX([0]),R))
-    qR_q = quat_mul(qR, q)
-    R_b = qR_q[1:4]
-    
+    # #BRF
+    # qR = quat_mul(quat_inv(q), vertcat(SX([0]),R))
+    # qR_q = quat_mul(qR, q)
+    # R_b = qR_q[1:4]
+
+    #v_dot = (Faero_b + T_b  + R_b)/Mass + G_b  - cross(w,v)
     
     #Total external forces devided by glider's mass (linear acceleration)
-    v_dot = (Faero_b + T_b  + R_b)/Mass + G_b  - cross(w,v)
+    v_dot = (Faero_b + T_b)/Mass + G_b  - cross(w,v)
     
     #-------------------------
     #Dynamic Equation: Moments
@@ -259,6 +258,7 @@ def kite_sim(aircraft, params):
     
     #Angular motion equationin BRF
     Maero = vertcat(L, M, N)
+
     #Moments rotation SRF -> BRF
     T_tmp = quat_mul(quat_inv(q_aoa), vertcat(SX([0]),Maero) )
     Trot = quat_mul(T_tmp, q_aoa)
@@ -306,7 +306,7 @@ def kite_sim(aircraft, params):
     #get Jacobian of the RK4 Integrator
     integrator_jacobian = jacobian(integrator_RK4,X)
     rk4_jacobian = Function('RK4_JACOBIAN', [X, U, dT], [integrator_jacobian],['X', 'U', 'dT'], ['integrator_jacobian'])
-    
+
     h = DT
     x0 = X0
     u0 = U0
@@ -365,7 +365,7 @@ def kite_sim(aircraft, params):
         res = []
         while (t <= T_FINISH):
             #simulation loop
-            print('Simulation looop')
+            print('Simulation looop. Implement iiiiit')
             #logging data
             #log = np.append(np.append(log, x0), t)
             log = vertcat(log,x0,t)
