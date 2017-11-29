@@ -83,4 +83,5 @@ def eul2quat(eulAngles):
          cy * sr * cp + sy * cr * sp,
          sy * cr * cp - cy * sr * sp]
     
+    #return np.array(q)
     return q

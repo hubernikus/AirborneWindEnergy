@@ -27,13 +27,12 @@ from quatlib import *
 # Time span
 t_start = 0
 t_final = 5
-dt = 0.01
+dt = 0.1
 
 # motion: 'linear', 'circular'
 motionType = 'circular'
 
-# Choose sort of visualization
-# '2' - 2D ; '3' - 3D
+# Choose sort of visualization  -----  '2' - 2D ; '3' - 3D
 visual = 3
 
 # Simulation parameters
@@ -46,8 +45,8 @@ parameters['t_span'] = [t_start, t_final, dt]
 
 # Import Initial Position and Control
 if motionType=='linear':
-    #with open('steadyState_longitudial_steadyLevel.yaml') as yamlFile:
-    with open('steadyState_longitudial.yaml') as yamlFile:
+    with open('steadyState_longitudial_steadyLevel.yaml') as yamlFile:
+    #with open('steadyState_longitudial.yaml') as yamlFile:
         initCond = yaml.safe_load(yamlFile)
     vel0 = initCond['vel']
     alpha0 = initCond['alpha']
@@ -60,16 +59,13 @@ if motionType=='linear':
 
     quat0 = [1, 0, 0, 0]
     euler0 = [0,alpha0+gamma, 0]
-    print(euler0)
-    eulDirect = eul2quat(euler0)
-    quat0 = eulDirect
+    quat0 = eul2quat(euler0)
         
-    parameters['x0'] = vel0 + angRate0 +  x0 +  quat0
-    
     rudder = 0
     
 elif motionType=='circular':
-    with open('steadyCircle.yaml') as yamlFile:
+    #with open('steadyCircle.yaml') as yamlFile:
+    with open('steadyCircle3.yaml') as yamlFile:
         
         initCond = yaml.safe_load(yamlFile)
         
@@ -80,12 +76,15 @@ elif motionType=='circular':
     x0 = [0,0,0]
     quat0 = initCond['quat']
 
-    parameters['x0'] = vel0 + angRate0 +  x0 +  quat0
-
     rudder = initCond['dR']
 
+    trajRad = initCond['radius']
+
+
+
 # State: [velocity (BRF), angular rates (BRF), position (IRF), quaternions (IRF-BRF)]
-#parameters['x0'] = [1.5,0,0,0,0,0,0,0,3,1,0,0,0]
+#parameters['x0'] = [1.5,0,0,0,0,0,0,0,3,1,0,0,0]    
+parameters['x0'] = vel0 + angRate0 +  x0 +  quat0
 
 # Steady Control input
 thrust = initCond['T']
@@ -109,6 +108,7 @@ quat = [state[-1][9:13]]
 eul = [quat2eul(quat[-1])]
 
 u0 = parameters['u0']
+print('Control with [T, dE, dR]', u0)
 
 time = [0]
 
@@ -159,6 +159,9 @@ elif visual == 3: # 3 Dimensional Plot
     tailPos = -0.65
     tailPosz = 0.1
 
+    # Prediction length
+    lPred = 15
+
 # Initialization
 hLim = 10 # Boundaries of the Flying Machine Area
 def init():
@@ -183,7 +186,7 @@ def init():
     return  line_x, line_y, line_z
 
 def init3d():
-    print('init useless...')
+    print('init call is  useless...')
     #ax_3d.set_xlim(-hLim,hLim)
     #ax_3d.set_ylim(-hLim,hLim)
     #ax_3d.set_zlim(-5, 10)
@@ -226,12 +229,16 @@ def update3d_aircraft(frame):
                                'r--')
         
     elif motionType =='circular': # TODO implement circular trajectory
-        vel_I = quatrot_inv(vel0, np.array(quat0))
-        dVel = vel_I*lPred/np.linalg.norm(vel_I)
-        posPred, = ax_3d.plot([x0[0], x0[0]+dVel[0]],
-                              [x0[1], x0[1]+dVel[1]],
-                              [x0[2], x0[2]+dVel[2]],
-                               'r--')
+        #print('draw circle')
+        N_circ = 20 # number of sample points
+        
+        posCenter = [x0[0],x0[1]+trajRad,x0[2]] # TODO: more general center...
+
+        xCirc = [trajRad*np.cos(2*pi/N_circ*i)+posCenter[0] for i in range(N_circ+1)]
+        yCirc = [trajRad*np.sin(2*pi/N_circ*i)+posCenter[1] for i in range(N_circ+1)]
+        zCirc = [posCenter[2] for i in range(N_circ+1)]
+                        
+        posPred, = ax_3d.plot(xCirc, yCirc, zCirc,'r--')
         
     else:
         print('prediction not defined')
@@ -365,6 +372,3 @@ elif visual == 3:
 #ani = FuncAnimation(fig, update_limitCycle, frames=np.ones(int((t_final-t_start)/dt))*dt,
                     #init_func=init, blit=True)
 plt.show()
- 
-
-

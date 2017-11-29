@@ -178,25 +178,41 @@ def steadyLevel_circle2(mu, vel):
 
     omega = vel/r
 
+    # WRONG ASSUMPTION - no side slip...
+    w = [0, -omega*sin(mu), -omega*cos(mu)]
+
+    w_bar = [b*w[0]/(2*vel),
+             c*w[1]/(2*vel),
+             b*w[2]/(2*vel)]
+
     K = 1/(pi*e_o*AR)
 
     T = 0.5*ro*vel**2*S*CD0_tot + 2*K*(Mass*g)**2/(ro*vel**2*S*(cos(mu))**2)
+
+    C_n0_bar = (Cnr*w_bar[2] + Cnp*w_bar[0]) + Cn0
+    C_l0_bar = (Clr*w_bar[2] + Clp*w_bar[0]) + Cl0
     
+    dR = (C_l0_bar*Cnb - C_n0_bar*Clb)/(Cndr*Clb - Cldr*Cnb)
+    beta = -(C_l0_bar + Cldr*dR)/Clb
+
+    
+    
+    print('Thrust2', T)
     
     # Create output dictionnary
     steadyState = {}
-    steadyState['dE'] = dE
-    steadyState['dR'] = dR
-    steadyState['alpha'] = alpha
-    steadyState['beta'] = beta
-    steadyState['T'] = T
-    steadyState['gamma'] = gamma
-    steadyState['mu'] = mu
-    steadyState['vel'] = vel
-    steadyState['angRate'] = w
-    steadyState['pos'] = x
-    steadyState['quat'] = q
-    steadyState['radius'] = r
+    #steadyState['dE'] = dE
+    # steadyState['dR'] = dR
+    #steadyState['alpha'] = alpha
+    # steadyState['beta'] = beta
+    # steadyState['T'] = T
+    # steadyState['gamma'] = gamma
+    # steadyState['mu'] = mu
+    # steadyState['vel'] = vel
+    # steadyState['angRate'] = w
+    # steadyState['pos'] = x
+    # steadyState['quat'] = q
+    #steadyState['radius'] = r
     
     return steadyState
     
@@ -211,8 +227,7 @@ def steadyLevel_circle(mu, vel):
     r = vel**2/(g*tan(mu))
 
     omega = vel/r
-    print('omega', omega)
-
+    
     # WRONG ASSUMPTION - no side slip...
     w = [0, -omega*sin(mu), -omega*cos(mu)]
 
@@ -275,26 +290,29 @@ def steadyLevel_circle(mu, vel):
     if(len(alpha) > 1):
         print('WARNING: alpha is a vector')
 
-    T = [0.5/sin(alpha[i])*(1/sin(mu)*Mass*vel**2/r + 1/cos(mu)*Mass*g) for i in range(len(alpha))]
-    dE = [-(C_m0_bar + Cma * alpha[i])/Cmde for i in range(len(alpha))]
-
-    T = T[0] # TODO better solution for list problem..
-    dE = dE[0]
-
-    beta = [-(C_l0_bar + Cldr*dR)/Clb for i in range(len(alpha))]
-
-    CD = CD0_tot + (CL0 + CLa_tot * alpha[0])**2 / (pi * e_o * AR) #total drag coefficient 
-
-    print('cd:', CD)
+    #T = [0.5/sin(alpha[i])*(1/sin(mu)*Mass*vel**2/r + 1/cos(mu)*Mass*g) for i in range(len(alpha))]
+    alpha = alpha[0] # TODO --- better solution for this mutliple alpha
     
-    print(alpha)
+
+    dE = -(C_m0_bar + Cma * alpha)/Cmde
+
+    #beta = [-(C_l0_bar + Cldr*dR)/Clb for i in range(len(alpha))]
+    beta = -(C_l0_bar + Cldr*dR)/Clb
+
+    CD = CD0_tot + (CL0 + CLa_tot * alpha)**2 / (pi * e_o * AR) #total drag coefficient
+
+    F_D = dyn_press*S*CD
+    T = F_D/cos(alpha)
+
+    print('Thrust307', T)
+    
     i = 0
-    vel = [cos(alpha[i])*cos(beta[i])*vel,
-           sin(beta[i])*vel,
-           sin(alpha[i])*cos(beta[i])*vel]
+    vel = [cos(alpha)*cos(beta)*vel,
+           sin(beta)*vel,
+           sin(alpha)*cos(beta)*vel]
     x = [0, r ,0]
     
-    q = eul2quat([mu, alpha[0],0])
+    q = eul2quat([mu, alpha,0])
     
     # Create output dictionnary
     steadyState = {}
@@ -514,6 +532,7 @@ gamma = 0
 mu = 20/180*pi # rad
 
 initValues_circ = steadyLevel_circle(mu, Vel)
+initValues_circ2 = steadyLevel_circle2(mu, Vel)
 #initValues_circ = steadyLevel_circle(mu, Vel)
 
 print('')
@@ -527,10 +546,11 @@ print('Sideslip:', initValues_circ['beta'])
 print('Velocities:')
 print(initValues_circ['vel'])
 
-with open('steadyCircle' + '.yaml', 'w') as outfile:
-        yaml.dump(initValues_circ, outfile, default_flow_style=False)
+with open('steadyCircle3' + '.yaml', 'w') as outfile:
+    yaml.dump(initValues_circ, outfile, default_flow_style=False)
 
+with open('steadyCircle2' + '.yaml', 'w') as outfile:
+    yaml.dump(initValues_circ2, outfile, default_flow_style=False)
 
 plt.show()
 print('End script')
-
