@@ -1,67 +1,45 @@
-# -*- coding: utf-8 -*-
-"""###########################################################################
-#
-#                   kite validation script
-#                     klh   
-#
-########################################################################### """
-
-print('Kite validation started')
-# clear all; ## To ensure clean workspace
 ##
-# clc; close all; clear variables;
+##
+##
+##
 
-# Import needed libraries
-import numpy as np # Basic math library
-import yaml # import yaml files
+import cmath
 
-from sys import path
+#d = -vel**2*Mass/(dyn_ress**r*S*sin(mu)) + b0
+#c = (b1 + Cd0_tot + b0**2/(epsilon))
+#b = 2*b1*b0/epsilon
+#a = b1**2/espilon
 
-# Import ReadYalm
-path.append("/home/lukas/Software/casadi/casadi-py35-np1.9.1-v3.2.3-64bit")
-from casadi import *
+#a = 1
+#b = 3
+#c = -6
+#d = -8
 
-# Personal functions
-from kite_sim import kite_sim
+a = 2
+b = -3
+c = -3
+d = 2
 
-# CLASS definitions 
-class ParameterContainer:
-  simulation = 0
-  plot = 0
-  vr = 0 #list cannot be initialized here!
-  int_type = ''
-  t_span = ''
-  x0 = ''
-  u0 = ''
+# Cubic equation solver - Wikipedia
+D = 18*a*b*c*d - 4*b**3*d - 4*a*c**3 - 27*a*a*d*d
+D0 = b*b - 3*a*c
+D1 = 2*b*b*b - 9*a*b*c + 27*a*a*d
 
-#create kite model
-#aircraft = yaml.read('umx_radian.yaml');
+# Check nubmer of soluts
+if D0 == 0:
+  print('attention, D0 =0')
 
-YALM_stream = open('umx_radian.yaml')
-aircraft = yaml.load_all(YALM_stream)
-#for doc in docs:
-#    for k,v in doc.items():
-#        print( k, "->", v, '\n')
-#    print("\n")
+C = []
+C.append( ((D1 + (D1**2 - 4*D0**3 + 0j)**(0.5))*0.5)**(1/3.) )
+C.append( (-0.5 + 0.5*cmath.sqrt(3)*1j)*C[0])
+C.append( (-0.5 - 0.5*cmath.sqrt(3)*1j)*C[0])
 
-parameters = ParameterContainer()
+x = [-1/(3*a)*(b+C[i] + D0/C[i]) for i in range(len(C))]
 
-parameters.simulation = 0
-parameters.plot = 0
-parameters.vr = 0
-parameters.int_type = 'cvodes'
+print(x)
 
-start_sample = 10
-# s_time = exp_telemetry(start_sample,end)
-# f_time = exp_telemetry(end,end)
-# parameters.t_span = [s_time, f_time, dt]
-# parameters.x0 = exp_telemetry(start_sample,1:13)'
-parameters.u0 = [0,0,0]
+# Check iiiit...
+f_x = [a*x[i]**3 + b*x[i]**2 +c*x[i] + d  for i in range(len(x))]
 
+print([abs(f_x[i]) for i in range(len(f_x))])
 
-## Start simulation
-[num, flog, sym] = kite_sim(aircraft, parameters)
-
-
-
-print('Kite validation finished')

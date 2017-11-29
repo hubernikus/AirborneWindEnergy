@@ -40,7 +40,7 @@ with open('steadyState_longitudial.yaml') as yamlFile:
 
 # State: [velocity (BRF), angular rates (BRF), position (IRF), quaternions (IRF-BRF)]
 #parameters['x0'] = [1.5,0,0,0,0,0,0,0,3,1,0,0,0]
-vel0 = initCond['vel']
+ vel0 = initCond['vel']
 alpha0 = initCond['alpha']
 elevator = initCond['dE']
 thrust = initCond['T']

@@ -17,7 +17,6 @@ with open('umx_radian.yaml') as yamlFile:
 from kite_sim import *
 from quatlib import *
 
-
 # Time span
 t_start = 0
 t_final = 5
@@ -30,7 +29,6 @@ parameters['plot'] = 0
 parameters['vr'] = 0
 parameters['int_type'] = 'cvodes'
 parameters['t_span'] = [t_start, t_final, dt]
-
 
 # Import Initial Position and Control
 with open('steadyCircle.yaml') as yamlFile:
@@ -53,7 +51,6 @@ elevator = initCond['dE']
 rudder = initCond['dR']
 # Control: [Thrust, Elevevator, Rudder]
 parameters['u0'] = [thrust, elevator, rudder]
-print('u00000', parameters['u0'])
 
 # Algeabraic equation for system dynamics using CasADi
 num, flogg, sym = kite_sim(aircraft, parameters)
@@ -70,7 +67,6 @@ quat = [state[-1][9:13]]
 eul = [quat2eul(quat[-1])]
 
 u0 = parameters['u0']
-print('u0', u0)
 
 time = [0]
 
@@ -122,9 +118,9 @@ def update_aircraft(frame):
     time.append(time[-1]+dt) # update time vector
         
     # Simulation step
-    #print('x:', x[-1], '  vel:', vel[-1])
-    #print('eulerAngles:', eul[-1], '  angRate:', angRate[-1])
-    #print('quaternions:', quat[-1])
+    print('x:', x[-1], '  vel:', vel[-1])
+    print('eulerAngles:', eul[-1], '  angRate:', angRate[-1])
+    print('quaternions:', quat[-1])
     
     print(u0)
     out = integrator_num(x0=state[-1], p=u0)
@@ -169,3 +165,4 @@ ani = FuncAnimation(fig, update_aircraft, frames=np.ones(int((t_final-t_start)/d
 
 plt.show()
  
+

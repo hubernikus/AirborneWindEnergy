@@ -9,25 +9,37 @@ from math import asin, atan2, sin, cos, pi, copysign
 import numpy as np
 from numpy import linalg as LA
 
-
 def quatinv(q):
     #inverse quaternion 
-    
     # return inv_q =
-    return ( np.array([(1) -q(2) -q(3) -q(4)]) / LA.norm(q) )
+    return ( np.array([q[0], -q[1], -q[2], -q[3]]) / LA.norm(q) )
 
 
 def quatmul(q1,q2):
-    
     #quaternion multiplication
     s1 = q1[0]
     v1 = q1[1:4]
     
     s2 = q2[0]
     v2 = q2[1:4]
-    
+
     # return q = ...
-    return np.array([s1*s2 - np.dot(v1,v2), np.cross(v1,v2) + s1*v2 + s2*v1])
+    a = s1*s2 - np.dot(v1,v2)
+    b = np.cross(v1,v2)
+
+    return np.hstack(([s1*s2 - np.dot(v1,v2)],np.cross(v1,v2) + s1*v2 + s2*v1))
+
+def quatrot_inv(r, q):
+    r_ = quatmul(quatinv(q), np.hstack(([0],r)) )
+    r_ = quatmul(r_,q)
+    
+    return r_[1:4]
+
+def quatrot(r, q):
+    r_ = quatmul(q, np.hstack(([0],r)) )
+    r_ = quatmul(r_, quatinv(q) )
+
+    return r_[1:4]
 
 
 def quat2eul(q):

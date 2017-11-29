@@ -4,6 +4,7 @@ from math import sin, cos, tan, atan2, pi
 import matplotlib.pyplot as plt
 import numpy as np
 
+import cmath
 
 # import casadi library
 #from casadi import *
@@ -99,7 +100,7 @@ Cm_daoa = -2 * CLa_t * Vh * (lt/c) * dw #aoa-rate effect on pitch moment [] Sten
 
 def steadyLevel(dE, gamma):
     N_res = dE.shape[0]
-    
+
     # Pitch equilibrium
     alpha = -(Cm0+Cmde*dE)/Cma
 
@@ -167,11 +168,9 @@ def longitudinalFlight(dE, gamma):
     return steadyState
 
 
-def steadyLevel_circle(mu, vel):
-    # mu > 0 -> omega>0
-    # mu > 0 -> omega<0
-    gamma = 0 # horizontql circle
-
+def steadyLevel_circle2(mu, vel):
+    gamma = 0 # horizontal circle
+    
     dyn_press = 0.5*ro*vel**2 # dynamics pressure
     
     # FORMULAS 'steady aircraft flight'
@@ -179,46 +178,10 @@ def steadyLevel_circle(mu, vel):
 
     omega = vel/r
 
-    w_bar = [0,
-             c*omega*sin(mu)/(2*vel),
-             b*omega*cos(mu)/(2*vel)]
+    K = 1/(pi*e_o*AR)
 
-    w = [0, sin(mu), cos(mu)]
-
-        #alpha = 0 # TODO: what is it really..
-
-    # Moment equilibirium
-    C_n0_bar = (Cnr*w_bar[2] + Cnp*w_bar[0]) + Cn0
-    C_l0_bar = (Clr*w_bar[2] + Clp*w_bar[0]) + Cl0
+    T = 0.5*ro*vel**2*S*CD0_tot + 2*K*(Mass*g)**2/(ro*vel**2*S*(cos(mu))**2)
     
-    dR = (C_l0_bar*Cnb - C_n0_bar*Clb)/(Cndr*Clb - Cldr*Cnb)
-
-    C_m0_bar = w_bar[1]*Cmq + Cm0
-
-
-    # Force equilibirium
-    L = 0.5          * (1/sin(mu)*Mass*vel**2/r - 1/cos(mu)*Mass*g)
-
-    # Angle of Attack - Force equilibrium
-    b0 = CL0 + CLq*w_bar[1] - CLde/Cmde*C_m0_bar
-    b1 = CLa_tot - CLde/Cmde*Cma
-    alpha = 1/b1* ( 2*L/(ro*vel**2) - b0)
-
-    T = 0.5/sin(alpha)*(1/sin(mu)*Mass*vel**2/r + 1/cos(mu)*Mass*g)
-
-
-    dE = - (C_m0_bar + Cma * alpha)/Cmde
-
-    beta = -(C_l0_bar + Cldr*dR)/Clb
-
-
-    
-    vel = [cos(alpha)*cos(beta)*vel,
-           sin(beta)*vel,
-           sin(alpha)*cos(beta)*vel]
-    x = [0, r ,0]
-    
-    q = eul2quat([mu, gamma,0])
     
     # Create output dictionnary
     steadyState = {}
@@ -233,6 +196,120 @@ def steadyLevel_circle(mu, vel):
     steadyState['angRate'] = w
     steadyState['pos'] = x
     steadyState['quat'] = q
+    steadyState['radius'] = r
+    
+    return steadyState
+    
+def steadyLevel_circle(mu, vel):
+    # mu > 0 -> omega>0
+    # mu > 0 -> omega<0
+    gamma = 0 # horizontal circle
+
+    dyn_press = 0.5*ro*vel**2 # dynamics pressure
+    
+    # FORMULAS 'steady aircraft flight'
+    r = vel**2/(g*tan(mu))
+
+    omega = vel/r
+    print('omega', omega)
+
+    # WRONG ASSUMPTION - no side slip...
+    w = [0, -omega*sin(mu), -omega*cos(mu)]
+
+    w_bar = [b*w[0]/(2*vel),
+             c*w[1]/(2*vel),
+             b*w[2]/(2*vel)]
+    
+    #alpha = 0 # TODO: what is it really..
+
+    # Moment equilibirium
+    C_n0_bar = (Cnr*w_bar[2] + Cnp*w_bar[0]) + Cn0
+    C_l0_bar = (Clr*w_bar[2] + Clp*w_bar[0]) + Cl0
+    
+    dR = (C_l0_bar*Cnb - C_n0_bar*Clb)/(Cndr*Clb - Cldr*Cnb)
+
+    C_m0_bar = w_bar[1]*Cmq + Cm0
+
+    # Angle of Attack - Force equilibrium
+    b0 = CL0 + CLq*w_bar[1] - CLde/Cmde*C_m0_bar
+    b1 = CLa_tot - CLde/Cmde*Cma
+    
+    # Solve cubic equation
+    epsilon = pi*e_o*AR
+    
+    dd = -vel**2*Mass/(dyn_press*r*S*sin(mu)) + b0
+    cc = (b1 + CD0_tot + b0**2/(epsilon))
+    bb = 2*b1*b0/epsilon
+    aa = b1**2/epsilon
+
+    # Cubic equation solver - Wikipedia
+    D = 18*aa*bb*cc*dd - 4*bb**3*dd - 4*aa*cc**3 - 27*aa*aa*dd*dd
+    D0 = bb*bb - 3*aa*cc
+    D1 = 2*bb*bb*bb - 9*aa*bb*cc + 27*aa*aa*dd
+
+    # Check nubmer of soluts
+    if D0 == 0:
+      print('attention, D0 =0')
+      C1 = (D1 + (D1**2 - 4*D0**3 + 0j)**(0.5))
+      C2 = (D1 - (D1**2 - 4*D0**3 + 0j)**(0.5))
+      if abs(C1) > abs(C2) :
+        C = [(C1*0.5)**(1/3)]
+      else:
+        C = [(C2*0.5)**(1/3)]
+    else: 
+        C = [((D1 + (D1**2 - 4*D0**3 + 0j)**(0.5))*0.5)**(1/3.) ]
+
+    C.append( (-0.5 + 0.5*cmath.sqrt(3)*1j)*C[0])
+    C.append( (-0.5 - 0.5*cmath.sqrt(3)*1j)*C[0])
+
+    alpha = [-1/(3*aa)*(bb+C[i] + D0/C[i]) for i in range(len(C))]
+
+    it = 0
+    for i in range(len(alpha)): # Check for complex results
+        if(abs(alpha[it].imag) > 1e-10): # tolerance for numerical error
+            del alpha[it]
+        else:
+            alpha[it] = alpha[it].real
+            it += 1
+
+    if(len(alpha) > 1):
+        print('WARNING: alpha is a vector')
+
+    T = [0.5/sin(alpha[i])*(1/sin(mu)*Mass*vel**2/r + 1/cos(mu)*Mass*g) for i in range(len(alpha))]
+    dE = [-(C_m0_bar + Cma * alpha[i])/Cmde for i in range(len(alpha))]
+
+    T = T[0] # TODO better solution for list problem..
+    dE = dE[0]
+
+    beta = [-(C_l0_bar + Cldr*dR)/Clb for i in range(len(alpha))]
+
+    CD = CD0_tot + (CL0 + CLa_tot * alpha[0])**2 / (pi * e_o * AR) #total drag coefficient 
+
+    print('cd:', CD)
+    
+    print(alpha)
+    i = 0
+    vel = [cos(alpha[i])*cos(beta[i])*vel,
+           sin(beta[i])*vel,
+           sin(alpha[i])*cos(beta[i])*vel]
+    x = [0, r ,0]
+    
+    q = eul2quat([mu, alpha[0],0])
+    
+    # Create output dictionnary
+    steadyState = {}
+    steadyState['dE'] = dE
+    steadyState['dR'] = dR
+    steadyState['alpha'] = alpha
+    steadyState['beta'] = beta
+    steadyState['T'] = T
+    steadyState['gamma'] = gamma
+    steadyState['mu'] = mu
+    steadyState['vel'] = vel
+    steadyState['angRate'] = w
+    steadyState['pos'] = x
+    steadyState['quat'] = q
+    steadyState['radius'] = r
     
     return steadyState
 
@@ -252,7 +329,22 @@ def steadyLevel_longitudial(elevator):
     # omega_bar = 1/Mass*(S*ro*0.5)*(C_L)
 
     
+def testEquationsOfMotion_circle(x, alpha, vel, u):
+    V = sqrt(vel[0]*vel[0] + vel[1]*vel[1] + vel[2]*vel[2] )
+    ss = asin(vel[1] / V) #side slip angle [rad] (v(3)/v(1)) // small angle assumption
+    aoa = atan2(vel[2] , vel[0])  # angle of attack definition [rad] (v(2)/L2(v))
+    dyn_press = 0.5 * ro * V*V #dynamic pressure
+    
+    CD_w = CD0_w + (CL0 + CLa_w * aoa )**2 / (pi * e_o * AR) #wing drag coefficient
+    CD = CD0_tot + (CL0 + CLa_tot * aoa)**2 / (pi * e_o * AR) #total drag coefficient 
 
+    LIFT = ( (CL0 + CLa_tot * aoa) * dyn_press * S +
+            (0.25 * CLq * c * S * ro) * V * w[1] )
+    DRAG = CD * dyn_press * S
+    SF = ( (CYb * ss + CYdr * dR) * dyn_press * S +
+            0.25 * (CYr * w[2] + CYp * w[0]) * (b * ro * S) * V )
+
+    
 def testEquationsOfMotion_model(x, alpha, vel, u):
     # TODO: more generalized
     
@@ -295,7 +387,7 @@ def testEquationsOfMotion_model(x, alpha, vel, u):
 
         
 def testEquationsOfMotion_script(x, alpha, vel, u):
-    return 1
+     return 1
 # ---------------------------
 print('Start script')
 
@@ -331,7 +423,10 @@ def writeToYamlFile_singleValue(fileName, initValues):
     with open(fileName + '.yaml', 'w') as outfile:
         yaml.dump(initValues, outfile, default_flow_style=False)
 
-    
+
+
+
+        
 figDir =  '../fig/'
 dE = np.linspace(-0.05,0.05,41)
 
@@ -375,12 +470,7 @@ print('Velocities:')
 print(vel0)
 print('Thrust:', T0)
 
-
-## Flight moving up
-gamma = 5/180*pi
-initValues = steadyLevel(dE, gamma)
-
-writeToYamlFile('steadyState_longitudial_steadyLevel', initValues)
+#writeToYamlFile('steadyState_longitudial_steadyLevel', initValues)
 
 # plt.figure()
 # plt.subplot(3,1,1)
@@ -401,7 +491,7 @@ writeToYamlFile('steadyState_longitudial_steadyLevel', initValues)
 # plt.ylabel('Thrust [N]')
 # plt.xlim(elevator[0],elevator[-1])
 
-
+gamma = 5*pi/180 #angle in rad 
 dE = np.array([0])
 initValues = longitudinalFlight(dE, gamma)
 writeToYamlFile('steadyState_longitudial', initValues)
@@ -418,22 +508,24 @@ T0 = initValues['T'][0]
 # print(vel0)
 # print('Thrust:', T0)
 
-Vel = 7 # m/s
+Vel = 5 # m/s
 gamma = 0
 
-mu = 10/180*pi # rad
+mu = 20/180*pi # rad
 
 initValues_circ = steadyLevel_circle(mu, Vel)
 #initValues_circ = steadyLevel_circle(mu, Vel)
 
 print('')
 print('Stable Circle flight with:')
+print('Thrust:', initValues_circ['T'])
 print('Elevator:', initValues_circ['dE'])
+print('Rudder:', initValues_circ['dR'])
+print('Circle Radius:', initValues_circ['radius'])
 print('Angle of attack:', initValues_circ['alpha'])
 print('Sideslip:', initValues_circ['beta'])
 print('Velocities:')
 print(initValues_circ['vel'])
-print('Thrust:', initValues_circ['T'])
 
 with open('steadyCircle' + '.yaml', 'w') as outfile:
         yaml.dump(initValues_circ, outfile, default_flow_style=False)
@@ -441,3 +533,4 @@ with open('steadyCircle' + '.yaml', 'w') as outfile:
 
 plt.show()
 print('End script')
+
