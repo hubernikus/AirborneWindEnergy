@@ -66,7 +66,6 @@ if motionType=='linear':
 elif motionType=='circular':
     #with open('steadyCircle.yaml') as yamlFile:
     with open('steadyCircle3.yaml') as yamlFile:
-        
         initCond = yaml.safe_load(yamlFile)
         
     vel0 = initCond['vel']
@@ -88,6 +87,7 @@ parameters['x0'] = vel0 + angRate0 +  x0 +  quat0
 
 # Steady Control input
 thrust = initCond['T']
+thrust = 0.029581
 elevator = initCond['dE']
 
 # Control: [Thrust, Elevevator, Rudder]

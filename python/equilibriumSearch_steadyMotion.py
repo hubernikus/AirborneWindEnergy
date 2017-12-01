@@ -197,8 +197,7 @@ def steadyLevel_circle2(mu, vel):
 
     
     
-    print('Thrust2', T)
-    
+        
     # Create output dictionnary
     steadyState = {}
     #steadyState['dE'] = dE
@@ -302,9 +301,19 @@ def steadyLevel_circle(mu, vel):
     CD = CD0_tot + (CL0 + CLa_tot * alpha)**2 / (pi * e_o * AR) #total drag coefficient
 
     F_D = dyn_press*S*CD
-    T = F_D/cos(alpha)
+    F_L = ( (CL0 + CLa_tot * alpha) * dyn_press * S +
+            (0.25 * CLq * c * S * ro) * vel * w[1] )
 
-    print('Thrust307', T)
+    
+    T = F_D/cos(alpha)
+    T1 = (Mass*g/cos(mu) - F_L)/sin(alpha)
+    
+    K = 1/(pi*e_o*AR)
+    T2 = 0.5*ro*vel**2*S*CD0_tot + 2*K*(Mass*g)**2/(ro*vel**2*S*(cos(mu))**2)
+
+    print('T (drag equilibirum)', T)
+    print('T (lift equilibirum)', T1)
+    print('T (oversimplifaction)', T2)
     
     i = 0
     vel = [cos(alpha)*cos(beta)*vel,
@@ -406,9 +415,6 @@ def testEquationsOfMotion_model(x, alpha, vel, u):
         
 def testEquationsOfMotion_script(x, alpha, vel, u):
      return 1
-# ---------------------------
-print('Start script')
-
 
 
 def writeToYamlFile(fileName, initValues):
@@ -441,10 +447,11 @@ def writeToYamlFile_singleValue(fileName, initValues):
     with open(fileName + '.yaml', 'w') as outfile:
         yaml.dump(initValues, outfile, default_flow_style=False)
 
-
-
-
         
+######################################################################################        
+print('Start script')
+
+
 figDir =  '../fig/'
 dE = np.linspace(-0.05,0.05,41)
 
@@ -475,7 +482,6 @@ T = initValues['T']
 
 elevator0 = np.array([0])
 initValues = steadyLevel_longitudial(elevator0)
-
 elevator0 = initValues['dE'][0]
 alpha0 = initValues['alpha'][0]
 vel0 = initValues['vel']
@@ -487,6 +493,7 @@ print('Angle of attack:', alpha0)
 print('Velocities:')
 print(vel0)
 print('Thrust:', T0)
+print('')
 
 #writeToYamlFile('steadyState_longitudial_steadyLevel', initValues)
 
@@ -526,10 +533,10 @@ T0 = initValues['T'][0]
 # print(vel0)
 # print('Thrust:', T0)
 
-Vel = 5 # m/s
+Vel = 13 # m/s
 gamma = 0
 
-mu = 20/180*pi # rad
+mu = 80/180*pi # rad
 
 initValues_circ = steadyLevel_circle(mu, Vel)
 initValues_circ2 = steadyLevel_circle2(mu, Vel)
@@ -545,6 +552,7 @@ print('Angle of attack:', initValues_circ['alpha'])
 print('Sideslip:', initValues_circ['beta'])
 print('Velocities:')
 print(initValues_circ['vel'])
+print('')
 
 with open('steadyCircle3' + '.yaml', 'w') as outfile:
     yaml.dump(initValues_circ, outfile, default_flow_style=False)

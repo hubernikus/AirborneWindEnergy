@@ -151,7 +151,7 @@ def kite_sim(aircraft, params):
         U0 = params['u0']
         
         
-        if('plot' in params):
+        if('plot' in prams):
             PLOT_RESULTS = params['plot']
         
     
