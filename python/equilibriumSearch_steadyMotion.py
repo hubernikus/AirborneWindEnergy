@@ -215,20 +215,28 @@ def steadyLevel_circle2(mu, vel):
     
     return steadyState
     
-def steadyLevel_circle(mu, vel):
+def steadyLevel_circle(vel, r):
+    gamma = 0 # steady level
+    return steadyState_circle(vel, r, gamma)
+    
+def steadyState_circle(vel, r, gamma):
     # mu > 0 -> omega>0
-    # mu > 0 -> omega<0
-    gamma = 0 # horizontal circle
+    # mu > 0 -> ome ga<0
+    print(gamma)
+    #gamma = 0 # horizontal circle
+    cosGam = cos(gamma)
 
     dyn_press = 0.5*ro*vel**2 # dynamics pressure
     
     # FORMULAS 'steady aircraft flight'
-    r = vel**2/(g*tan(mu))
-
+    #r = vel**2/(g*tan(mu))
+    #mu = atan(vel**2/(g*r))
+    mu = atan(vel**2*cosGam/(g*r))
+    
     omega = vel/r
     
     # WRONG ASSUMPTION - no side slip...
-    w = [0, -omega*sin(mu), -omega*cos(mu)]
+    w = [0, omega*sin(mu), - omega*cos(mu)]
 
     w_bar = [b*w[0]/(2*vel),
              c*w[1]/(2*vel),
@@ -236,7 +244,7 @@ def steadyLevel_circle(mu, vel):
     
     #alpha = 0 # TODO: what is it really..
 
-    # Moment equilibirium
+    # Moment equilibrium
     C_n0_bar = (Cnr*w_bar[2] + Cnp*w_bar[0]) + Cn0
     C_l0_bar = (Clr*w_bar[2] + Clp*w_bar[0]) + Cl0
     
@@ -251,7 +259,7 @@ def steadyLevel_circle(mu, vel):
     # Solve cubic equation
     epsilon = pi*e_o*AR
     
-    dd = -vel**2*Mass/(dyn_press*r*S*sin(mu)) + b0
+    dd = -((cosGam*vel)**2*Mass)/(dyn_press*r*S*sin(mu)) + b0
     cc = (b1 + CD0_tot + b0**2/(epsilon))
     bb = 2*b1*b0/epsilon
     aa = b1**2/epsilon
@@ -261,7 +269,7 @@ def steadyLevel_circle(mu, vel):
     D0 = bb*bb - 3*aa*cc
     D1 = 2*bb*bb*bb - 9*aa*bb*cc + 27*aa*aa*dd
 
-    # Check nubmer of soluts
+    # Check nubmer of solutes
     if D0 == 0:
       print('attention, D0 =0')
       C1 = (D1 + (D1**2 - 4*D0**3 + 0j)**(0.5))
@@ -293,8 +301,9 @@ def steadyLevel_circle(mu, vel):
     alpha = alpha[0] # TODO --- better solution for this mutliple alpha
     
 
-    dE = -(C_m0_bar + Cma * alpha)/Cmde
-
+    dE = -(C_m0_bar + Cma * alpha)/Cmde # 
+    #dE = -(C_m0_bar + Cma * alpha)/Cmde # - not exact 
+    
     #beta = [-(C_l0_bar + Cldr*dR)/Clb for i in range(len(alpha))]
     beta = -(C_l0_bar + Cldr*dR)/Clb
 
@@ -311,17 +320,15 @@ def steadyLevel_circle(mu, vel):
     K = 1/(pi*e_o*AR)
     T2 = 0.5*ro*vel**2*S*CD0_tot + 2*K*(Mass*g)**2/(ro*vel**2*S*(cos(mu))**2)
 
-    print('T (drag equilibirum)', T)
-    print('T (lift equilibirum)', T1)
-    print('T (oversimplifaction)', T2)
-    
     i = 0
     vel = [cos(alpha)*cos(beta)*vel,
            sin(beta)*vel,
            sin(alpha)*cos(beta)*vel]
-    x = [0, r ,0]
     
-    q = eul2quat([mu, alpha,0])
+    x = [0, r ,0]
+    x_center = [0,0,0]
+    q = eul2quat([mu+pi, alpha,0])
+    
     
     # Create output dictionnary
     steadyState = {}
@@ -335,6 +342,7 @@ def steadyLevel_circle(mu, vel):
     steadyState['vel'] = vel
     steadyState['angRate'] = w
     steadyState['pos'] = x
+    steadyState['centerPos'] = x_center
     steadyState['quat'] = q
     steadyState['radius'] = r
     
@@ -451,6 +459,8 @@ def writeToYamlFile_singleValue(fileName, initValues):
 ######################################################################################        
 print('Start script')
 
+yamlDir ='../steadyState_modes/'
+
 
 figDir =  '../fig/'
 dE = np.linspace(-0.05,0.05,41)
@@ -515,7 +525,6 @@ print('')
 # plt.xlabel('Elevator [deg]')
 # plt.ylabel('Thrust [N]')
 # plt.xlim(elevator[0],elevator[-1])
-
 gamma = 5*pi/180 #angle in rad 
 dE = np.array([0])
 initValues = longitudinalFlight(dE, gamma)
@@ -534,31 +543,62 @@ T0 = initValues['T'][0]
 # print('Thrust:', T0)
 
 Vel = 13 # m/s
+r = 3 # m/s
+
 gamma = 0
-
-mu = 80/180*pi # rad
-
-initValues_circ = steadyLevel_circle(mu, Vel)
-initValues_circ2 = steadyLevel_circle2(mu, Vel)
+initValues_circ = steadyState_circle(Vel,r, gamma)
+#initValues_circ2 = steadyLevel_circle2(mu, Vel)
 #initValues_circ = steadyLevel_circle(mu, Vel)
 
 print('')
 print('Stable Circle flight with:')
-print('Thrust:', initValues_circ['T'])
-print('Elevator:', initValues_circ['dE'])
-print('Rudder:', initValues_circ['dR'])
+
 print('Circle Radius:', initValues_circ['radius'])
 print('Angle of attack:', initValues_circ['alpha'])
 print('Sideslip:', initValues_circ['beta'])
-print('Velocities:')
-print(initValues_circ['vel'])
+print('mu', mu)
+print(' --- State --- ')
+print('Angular Rate',initValues_circ['angRate'])
+print('Position,', initValues_circ['pos'])
+print('Velocities:', initValues_circ['vel'])
+print('Quaternion', initValues_circ['quat'])
+print('--- Control --- ')
+print('Thrust:', initValues_circ['T'])
+print('Elevator:', initValues_circ['dE'])
+print('Rudder:', initValues_circ['dR'])
 print('')
 
-with open('steadyCircle3' + '.yaml', 'w') as outfile:
+with open(yamlDir + 'circle_gamma0deg' + '.yaml', 'w') as outfile:
     yaml.dump(initValues_circ, outfile, default_flow_style=False)
 
-with open('steadyCircle2' + '.yaml', 'w') as outfile:
-    yaml.dump(initValues_circ2, outfile, default_flow_style=False)
+#with open('steadyCircle2' + '.yaml', 'w') as outfile:
+#    yaml.dump(initValues_circ2, outfile, default_flow_style=False)
+
+
+gamDeg = 45
+gamma = gamDeg*pi/180
+initValues_circ = steadyState_circle(Vel,r, gamma)
+with open(yamlDir+'circle_gamma{}deg.yaml'.format(gamDeg) , 'w') as outfile:
+    yaml.dump(initValues_circ, outfile, default_flow_style=False)
+
+print('')
+print('Stable Circle flight with:')
+
+print('Circle Radius:', initValues_circ['radius'])
+print('Angle of attack:', initValues_circ['alpha'])
+print('Sideslip:', initValues_circ['beta'])
+print('mu', mu)
+print(' --- State --- ')
+print('Angular Rate',initValues_circ['angRate'])
+print('Position,', initValues_circ['pos'])
+print('Velocities:', initValues_circ['vel'])
+print('Quaternion', initValues_circ['quat'])
+print('--- Control --- ')
+print('Thrust:', initValues_circ['T'])
+print('Elevator:', initValues_circ['dE'])
+print('Rudder:', initValues_circ['dR'])
+print('')
+
 
 plt.show()
 print('End script')

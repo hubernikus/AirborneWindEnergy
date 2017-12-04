@@ -1,0 +1,25 @@
+T: 0.1718 # calc
+dE: -0.1339 # wrong, strong effect
+dR: 0.001468 # calc
+angRate:
+- 0.00
+- 4.21   #good..
+- -0.74
+centerPos:
+  - 0
+  - 0
+  - 0
+pos:
+- 0.0
+- 3.0
+- 0
+quat:
+- 0.6988
+- -0.6328
+- -0.167
+- 0.2785
+radius: 3.0
+vel:
+- 12.96 # calc
+- -0.222 # calc
+- 0.99 # cacl

@@ -1,7 +1,8 @@
 """
-Created on Wed Oct 11 23:20:36 2017
+Quaternion handling library
 
-@author: lukas
+@author: lukas huber
+@date: 2017-11-03
 """
 # import libraries
 from math import asin, atan2, sin, cos, pi, copysign
@@ -9,6 +10,7 @@ from math import asin, atan2, sin, cos, pi, copysign
 import numpy as np
 from numpy import linalg as LA
 
+## Quaternion Funtions
 def quatinv(q):
     #inverse quaternion 
     # return inv_q =
@@ -18,10 +20,10 @@ def quatinv(q):
 def quatmul(q1,q2):
     #quaternion multiplication
     s1 = q1[0]
-    v1 = q1[1:4]
+    v1 = np.array(q1[1:4])
     
     s2 = q2[0]
-    v2 = q2[1:4]
+    v2 = np.array(q2[1:4])
 
     # return q = ...
     a = s1*s2 - np.dot(v1,v2)
@@ -35,13 +37,21 @@ def quatrot_inv(r, q):
     
     return r_[1:4]
 
+
 def quatrot(r, q):
-    r_ = quatmul(q, np.hstack(([0],r)) )
-    r_ = quatmul(r_, quatinv(q) )
+    # rotation with quaternions
+    if(len(r)==3): # 3d -- rotation of vector
+        r_ = quatmul(q, np.hstack(([0],r)) )
+        r_ = quatmul(r_, quatinv(q) )
+        return r_[1:4]
+    
+    else: # 4d --  rotation of quaternion
+        r_ = quatmul(q, r)
+        r_ = quatmul(r_, quatinv(q))
+        
+        return r_
 
-    return r_[1:4]
-
-
+    
 def quat2eul(q):
     # roll (x-axis rotation)
     sinr = +2.0 * (q[0]*q[1] + q[2]*q[3])

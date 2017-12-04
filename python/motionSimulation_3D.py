@@ -22,6 +22,9 @@ with open('umx_radian.yaml') as yamlFile:
 from kite_sim import *
 from quatlib import *
 
+# Direcotry
+yamlDir = '../steadyState_modes/'
+
 
 ## SIMULATION PARAMETERS
 # Time span
@@ -29,8 +32,8 @@ t_start = 0
 t_final = 5
 dt = 0.1
 
-# motion: 'linear', 'circular'
-motionType = 'circular'
+# motion: 'linear', 'circular', 'MPC_simu', 'screw'
+motionType = 'linear'
 
 # Choose sort of visualization  -----  '2' - 2D ; '3' - 3D
 visual = 3
@@ -45,7 +48,7 @@ parameters['t_span'] = [t_start, t_final, dt]
 
 # Import Initial Position and Control
 if motionType=='linear':
-    with open('steadyState_longitudial_steadyLevel.yaml') as yamlFile:
+    with open(yamlDir + 'steadyState_longitudial_steadyLevel.yaml') as yamlFile:
     #with open('steadyState_longitudial.yaml') as yamlFile:
         initCond = yaml.safe_load(yamlFile)
     vel0 = initCond['vel']
@@ -62,32 +65,71 @@ if motionType=='linear':
     quat0 = eul2quat(euler0)
         
     rudder = 0
-    
+
 elif motionType=='circular':
-    #with open('steadyCircle.yaml') as yamlFile:
-    with open('steadyCircle3.yaml') as yamlFile:
+    #with open('steadyCircle3.yaml') as yamlFile:
+    #with open('steadyCircle_test.yaml') as yamlFile:
+    with open(yamlDir + 'circle_gamma0deg.yaml') as yamlFile:
         initCond = yaml.safe_load(yamlFile)
         
     vel0 = initCond['vel']
+    vel0 = [float(vel0[i]) for i in range(len(vel0))]
     angRate0 =  initCond['angRate']
 
     x0 = initCond['pos']
-    x0 = [0,0,0]
+    posCenter = initCond['centerPos']
     quat0 = initCond['quat']
 
     rudder = initCond['dR']
 
     trajRad = initCond['radius']
+    
+    gamma = initCond['gamma'] # inclination
+    print(gamma)
+    
+    
+elif motionType=='MPC_simu':
+    motionType = 'circular'
+    
+    with open('steadyCircle_simuMPC.yaml') as yamlFile:
+        initCond = yaml.safe_load(yamlFile)
+    vel0 = initCond['vel']
+    vel0 = [float(vel0[i]) for i in range(len(vel0))]
+    angRate0 =  initCond['angRate']
+
+    x0 = initCond['pos']
+    posCenter = initCond['centerPos']
+    quat0 = initCond['quat']
+
+    rotAng = eul2quat([0,0,-pi/4])
+    quat0 = quatmul(rotAng, quat0)    
+    quat0 = [float(quat0[i]) for i in range(len(quat0))]
+    
+    rudder = initCond['dR']
+
+    trajRad = initCond['radius']
+    
 
 
+rotate = False
+if rotate:
+    rotAng = eul2quat([0,0,-pi/4])
+    quat0 = quatmul(rotAng, quat0)    
+    quat0 = [float(quat0[i]) for i in range(len(quat0))]
+    
+    #x0 = [float(x0[i]) for i in range(len(x0))]
 
 # State: [velocity (BRF), angular rates (BRF), position (IRF), quaternions (IRF-BRF)]
-#parameters['x0'] = [1.5,0,0,0,0,0,0,0,3,1,0,0,0]    
+#parameters['x0'] = [1.5,0,0,0,0,0,0,0,3,1,0,0,0]
+print('Initial Conditions')
+print('Velocity', vel0)
+print('Angular Rate:', angRate0)
+print('Position:', x0)
+print('Quaternions:',quat0)
 parameters['x0'] = vel0 + angRate0 +  x0 +  quat0
 
 # Steady Control input
 thrust = initCond['T']
-thrust = 0.029581
 elevator = initCond['dE']
 
 # Control: [Thrust, Elevevator, Rudder]
@@ -142,28 +184,32 @@ elif visual == 3: # 3 Dimensional Plot
     
     # Body geometry
     dirBody_B = np.array([1,0,0])
-    dl1 = 0.7 # Length tail of plane
-    dl2 = 0.3 # length noise of plane
-    lWidth = 2 # thickness of body
+    dl1 = 1.2 # Length tail of plane
+    dl2 = 0.5 # length noise of plane
+    lWidth = 3 # thickness of body
     
     # Wing geometry
     dirWing_B = np.array([0, 1, 0])
-    wingSpan = 0.35
-    wingWidth = 0.22
+    wingSpan = 0.7
+    wingWidth = 0.4
     wingPos = 0
 
     # Tail geometry (-> direction is parallel as wing)
     dirTail_B = np.array([0, 0, 1])
-    tailSpan = 0.15
-    tailWidth = 0.15
-    tailPos = -0.65
-    tailPosz = 0.1
+    tailSpan = 0.3
+    tailWidth = 0.25
+    tailPos = -1.2
+    tailPosz = 0.5
 
     # Prediction length
     lPred = 15
 
 # Initialization
 hLim = 10 # Boundaries of the Flying Machine Area
+
+
+##  --- Functions ---
+
 def init():
             
     ax_x.set_ylim(-20, 20)
@@ -205,13 +251,16 @@ def update3d_aircraft(frame):
     x.append(state[-1][6:9])
     quat.append(state[-1][9:13])
 
+    print('vel', [round(float(vel[-1][i]),2) for i in range(3)],
+          'angRate', [round(float(angRate[-1][i]),2) for i in range(3)])
+
     # Clear frame
     ax_3d.clear()
 
     iter = -1
-    planeBody, wingSurf, tailSurf = drawPlane(iter, quat[-1])
+    planeBody, wingSurf, tailSurf,  planeTailHold = drawPlane(iter,  quat[-1])
 
-    planeBody, wingSurf, tailSurf = drawPlane(0, quat[0]) # keep first plane
+    planeBody, wingSurf, tailSurf, planeTailHold = drawPlane(0, quat[0]) # keep first plane
     
     
     # Draw history of CM
@@ -228,20 +277,30 @@ def update3d_aircraft(frame):
                               [x0[2], x0[2]+dVel[2]],
                                'r--')
         
-    elif motionType =='circular': # TODO implement circular trajectory
+    elif motionType =='circular': # TODO: General circle..
         #print('draw circle')
         N_circ = 20 # number of sample points
         
-        posCenter = [x0[0],x0[1]+trajRad,x0[2]] # TODO: more general center...
+        #posCenter = [x0[0],x0[1]+trajRad,x0[2]] # TODO: more general center...
+        dPhi = 2*pi/N_circ
+        dZ = trajRad*dPhi*tan(gamma)
 
-        xCirc = [trajRad*np.cos(2*pi/N_circ*i)+posCenter[0] for i in range(N_circ+1)]
-        yCirc = [trajRad*np.sin(2*pi/N_circ*i)+posCenter[1] for i in range(N_circ+1)]
-        zCirc = [posCenter[2] for i in range(N_circ+1)]
+        if(gamma):
+            N_circ = 2*N_circ
+                        
+        xCirc = [trajRad*np.sin(dPhi*i)+posCenter[0] for i in range(N_circ+1)]
+        yCirc = [trajRad*np.cos(dPhi*i)+posCenter[1] for i in range(N_circ+1)]
+        zCirc = [posCenter[2]+dZ*i for i in range(N_circ+1)]
+        #zCirc = [posCenter[2] for i in range(N_circ+1)]
                         
         posPred, = ax_3d.plot(xCirc, yCirc, zCirc,'r--')
-        
     else:
         print('prediction not defined')
+        #posPred, = ax_3d.plot([x0[0], x0[0]+dVel[0]],
+                              #[x0[1], x0[1]+dVel[1]],
+                              #[x0[2], x0[2]+dVel[2]],
+                              #'r--')
+
 
     # Set limits 3D-plot
     ax_3d.set_xlim(-hLim, hLim)
@@ -250,7 +309,7 @@ def update3d_aircraft(frame):
     ax_3d.set_xlabel('X')
     ax_3d.set_ylabel('Y')
 
-    return planeBody, wingSurf, tailSurf, posHistory, posPred
+    return planeBody, wingSurf, tailSurf, planeTailHold, posHistory, posPred
     
 def update_aircraft(frame):
     dt = frame
@@ -271,6 +330,7 @@ def update_aircraft(frame):
 
     eul.append(quat2eul(quat[-1]))
 
+    
     # Draw to plot
     line_x.set_data(time,[x[i][0] for i in range(len(x))])
     line_y.set_data(time,[x[i][1] for i in range(len(x))])
@@ -299,17 +359,15 @@ def drawPlane(it, quat):
     # Draw airplane body
     q_IB =  [float(quat[i]) for i in range(4)]
 
-    dBody = quatrot(dirBody_B, np.array(q_IB) )
+    dBody = quatrot(dirBody_B, np.array(q_IB) ) # Direction of the plane
     X_plane = [x[it][0]-dl1*dBody[0], x[it][0]+dl2*dBody[0]]
     Y_plane = [x[it][1]-dl1*dBody[1], x[it][1]+dl2*dBody[1]]
     Z_plane = [x[it][2]-dl1*dBody[2], x[it][2]+dl2*dBody[2]]
     
     planeBody, = ax_3d.plot(X_plane, Y_plane, Z_plane, 'k', linewidth = lWidth)
-
     
     # Draw Wing
     dirWing = quatrot(dirWing_B, np.array(q_IB))
-    
     i = 0
     X_wing=np.array([[x[it][i]+wingPos*dBody[i]+wingSpan*dirWing[i], x[it][i]+wingPos*dBody[i]-wingSpan*dirWing[i]],
           [x[it][i]+(wingWidth+wingPos)*dBody[i]+wingSpan*dirWing[i], x[it][i]+(wingWidth+wingPos)*dBody[i]-wingSpan*dirWing[i]]])
@@ -322,29 +380,29 @@ def drawPlane(it, quat):
     
     wingSurf = ax_3d.plot_surface(X_wing, Y_wing, Z_wing, color='k')
 
+    
     # Draw Tail
     #dirWing = quatrot(dirWing_B, np.array(q_IB))
     dirTail = quatrot(dirTail_B, np.array(q_IB))
     i = 0
     X_tail=np.array([[x[it][i]+tailPos*dBody[i]+tailSpan*dirWing[i]+dirTail[i]*tailPosz,
-                      x[it][i]+tailPos*dBody[i]-tailSpan*dirWing[i]]+dirTail[i]*tailPosz,
-                     
+                      x[it][i]+tailPos*dBody[i]-tailSpan*dirWing[i]+dirTail[i]*tailPosz],
                      [x[it][i]+(tailWidth+tailPos)*dBody[i]+tailSpan*dirWing[i]+dirTail[i]*tailPosz,
                       x[it][i]+(tailWidth+tailPos)*dBody[i]-tailSpan*dirWing[i]+dirTail[i]*tailPosz]])
     i = 1
     Y_tail=np.array([[x[it][i]+tailPos*dBody[i]+tailSpan*dirWing[i]+dirTail[i]*tailPosz,
-                      x[it][i]+tailPos*dBody[i]-tailSpan*dirWing[i]]+dirTail[i]*tailPosz,
-                     
+                      x[it][i]+tailPos*dBody[i]-tailSpan*dirWing[i]+dirTail[i]*tailPosz],
                      [x[it][i]+(tailWidth+tailPos)*dBody[i]+tailSpan*dirWing[i]+dirTail[i]*tailPosz,
                       x[it][i]+(tailWidth+tailPos)*dBody[i]-tailSpan*dirWing[i]+dirTail[i]*tailPosz]])
     i = 2
     Z_tail=np.array([[x[it][i]+tailPos*dBody[i]+tailSpan*dirWing[i]+dirTail[i]*tailPosz,
-                      x[it][i]+tailPos*dBody[i]-tailSpan*dirWing[i]]+dirTail[i]*tailPosz,
-                     
+                      x[it][i]+tailPos*dBody[i]-tailSpan*dirWing[i]+dirTail[i]*tailPosz],
                      [x[it][i]+(tailWidth+tailPos)*dBody[i]+tailSpan*dirWing[i]+dirTail[i]*tailPosz,
                       x[it][i]+(tailWidth+tailPos)*dBody[i]-tailSpan*dirWing[i]+dirTail[i]*tailPosz]])
+    
     tailSurf = ax_3d.plot_surface(X_tail, Y_tail, Z_tail, color='k')
 
+        
     # Draw Tail-holder
     i = 0
     X_tailHold=[x[it][i]+(tailWidth/2+tailPos)*dBody[i],
@@ -356,9 +414,10 @@ def drawPlane(it, quat):
     Z_tailHold=[x[it][i]+(tailWidth/2+tailPos)*dBody[i],
                 x[it][i]+(tailWidth/2+tailPos)*dBody[i]+dirTail[i]*tailPosz]
     
+    planeTailHold, = ax_3d.plot(X_tailHold, Y_tailHold, Z_tailHold, 'k', linewidth = lWidth)
+
     
-    planeTailHold, = ax_3d.plot(X_tailHold, Y_tailHold, Z_tailHold, 'k', linewidth = lWidth)    
-    return planeBody, wingSurf, tailSurf
+    return planeBody, wingSurf, tailSurf, planeTailHold
 
 
 # Simulation starts here

@@ -341,7 +341,8 @@ def kite_sim(aircraft, params):
     SYM['X'] = X
     SYM['U'] = U
     SYM['dT'] = dT
-    
+
+    # Numeric expression
     NUM['DYN_FUNC'] = dyn_func
     NUM['DYN_JACOBIAN'] = dyn_jac
     NUM['RK4_JACOBIAN'] = rk4_jacobian
