@@ -19,12 +19,16 @@ from matplotlib.animation import FuncAnimation
 # 3D Animation utils
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
-from matplotlib.patches import Circle
+#from matplotlib.patches import
 
-# Add casadi to path
 from casadi import * # casadi library
 
 import yaml # import yaml files
+
+# Add path to local libraries
+import sys
+sys.path.append('./model/')
+sys.path.append('./lib/')
 
 # Local libraries
 from kite_sim import *
@@ -33,7 +37,7 @@ from controllib import *
 
 # Direcotry
 yamlDir = '../steadyState_modes/'
-
+modelDir = './model/'
 
 ##  --------- SIMULATION PARAMETERS ------------ 
 # Time span
@@ -48,7 +52,7 @@ motionType = 'MPC_simu'
 visual = 3
 
 # Choose sort of control ---- 'None', 'LQR', 'PID' ???
-control  = 'LQR'
+control  = 'None'
 
 
 # Simulation parameters
@@ -81,6 +85,7 @@ if motionType=='linear':
     quat0 = eul2quat(euler0)
         
     rudder = 0
+
     
 else:# circular or MPC_simu
     if motionType=='circular':
@@ -98,6 +103,8 @@ else:# circular or MPC_simu
             initCond = yaml.safe_load(yamlFile)
         motionType = 'circular' # circular motion was imulated
         quat0 = initCond['quat']
+
+        gamma = 0
 
         # rotate to align with circle
         rotAng = eul2quat([0,0,-4*pi/16])
@@ -163,7 +170,7 @@ time = [0]
 
 ## ------------- Set up linearized controller -----------------  
 if control == 'None':
-    K = np.zeros(3,3)
+    K = np.zeros((3,3))
 else:
     kite_dynamicalSystem = sym['DYNAMICS']
 
@@ -322,7 +329,6 @@ def update3d_aircraft(frame):
     planeBody, wingSurf, tailSurf,  planeTailHold = drawPlane(iter,  quat[-1])
 
     planeBody, wingSurf, tailSurf, planeTailHold = drawPlane(0, quat[0]) # keep first plane
-    
     
     # Draw history of CM
     posHistory, = ax_3d.plot([x[i][0] for i in range(len(x))],

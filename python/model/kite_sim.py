@@ -7,9 +7,11 @@ from casadi import * # import casadi library
 def kite_sim(params, aircraft = []):
     #function [NUM, FLOG, SYM] = kite_sim(aircraft, params)
     #casadi based kite dynamics simulation
+
     
     if not aircraft:
-        with open('umx_radian.yaml') as yamlFile: # import aircraft
+        modelPath = './model/'
+        with open(modelPath + 'umx_radian.yaml') as yamlFile: # import aircraft
             aircraft = yaml.safe_load(yamlFile)
     
     # -------------------------
