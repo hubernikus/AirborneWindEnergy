@@ -1,11 +1,16 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
-# import casadi library
-from casadi import *
+import yaml # import yaml files
 
-def kite_sim(aircraft, params):
+from casadi import * # import casadi library
+
+def kite_sim(params, aircraft = []):
     #function [NUM, FLOG, SYM] = kite_sim(aircraft, params)
     #casadi based kite dynamics simulation
+    
+    if not aircraft:
+        with open('umx_radian.yaml') as yamlFile: # import aircraft
+            aircraft = yaml.safe_load(yamlFile)
     
     # -------------------------
     # Enviromental constants
@@ -303,6 +308,7 @@ def kite_sim(aircraft, params):
     integrator_RK4 = RK4_sym(X, U, dyn_func, dT)
     RK4_INT = Function('RK4', [X,U,dT],[integrator_RK4],['X','U','dT'],['integratorFunc'])
 
+
     #get Jacobian of the RK4 Integrator
     integrator_jacobian = jacobian(integrator_RK4,X)
     rk4_jacobian = Function('RK4_JACOBIAN', [X, U, dT], [integrator_jacobian],['X', 'U', 'dT'], ['integrator_jacobian'])
@@ -342,7 +348,7 @@ def kite_sim(aircraft, params):
     SYM['U'] = U
     SYM['dT'] = dT
 
-    # Numeric expression
+    # Function expressions for numeric evaluation
     NUM['DYN_FUNC'] = dyn_func
     NUM['DYN_JACOBIAN'] = dyn_jac
     NUM['RK4_JACOBIAN'] = rk4_jacobian

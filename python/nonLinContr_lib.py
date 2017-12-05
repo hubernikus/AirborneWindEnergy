@@ -87,7 +87,7 @@ print('')
 # Lie der
 L_f1_f2 = LieDerivative(f_1,f_2,Z)
 F_L_f12 = Function('F_bracketff', [Z], [L_f1_f2])
-ff_mat = F_L_f12(z)
+ff_mat = F_L_f12(z) 
 print(ff_mat)
 print([-4*z[2],+3,0])
 print('')

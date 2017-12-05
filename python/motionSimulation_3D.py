@@ -1,6 +1,17 @@
 """
 First Aircraft simulation
+
+@author lukas huber
+@date 2017-12-04
+
 """
+
+# Automatically reload libraries 
+#   %load_ext autoreload
+#   %autoreload 2
+
+
+## ----- Import Libraries ##
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -13,30 +24,32 @@ from matplotlib.patches import Circle
 # Add casadi to path
 from casadi import * # casadi library
 
-# Read  yaml to path
 import yaml # import yaml files
-with open('umx_radian.yaml') as yamlFile:
-    aircraft = yaml.safe_load(yamlFile)
 
 # Local libraries
 from kite_sim import *
 from quatlib import *
+from controllib import *
 
 # Direcotry
 yamlDir = '../steadyState_modes/'
 
 
-## SIMULATION PARAMETERS
+##  --------- SIMULATION PARAMETERS ------------ 
 # Time span
 t_start = 0
 t_final = 5
 dt = 0.1
 
 # motion: 'linear', 'circular', 'MPC_simu', 'screw'
-motionType = 'linear'
+motionType = 'MPC_simu'
 
 # Choose sort of visualization  -----  '2' - 2D ; '3' - 3D
 visual = 3
+
+# Choose sort of control ---- 'None', 'LQR', 'PID' ???
+control  = 'LQR'
+
 
 # Simulation parameters
 parameters = dict()
@@ -46,7 +59,10 @@ parameters['vr'] = 0
 parameters['int_type'] = 'cvodes'
 parameters['t_span'] = [t_start, t_final, dt]
 
+
+## --------------------------------------
 # Import Initial Position and Control
+
 if motionType=='linear':
     with open(yamlDir + 'steadyState_longitudial_steadyLevel.yaml') as yamlFile:
     #with open('steadyState_longitudial.yaml') as yamlFile:
@@ -65,59 +81,40 @@ if motionType=='linear':
     quat0 = eul2quat(euler0)
         
     rudder = 0
+    
+else:# circular or MPC_simu
+    if motionType=='circular':
+        with open( yamlDir + 'steadyCircle3.yaml') as yamlFile:
+        #with open(yamlDir + 'circle_gamma0deg.yaml') as yamlFile:
+            initCond = yaml.safe_load(yamlFile)
+            
+        quat0 = initCond['quat']
 
-elif motionType=='circular':
-    #with open('steadyCircle3.yaml') as yamlFile:
-    #with open('steadyCircle_test.yaml') as yamlFile:
-    with open(yamlDir + 'circle_gamma0deg.yaml') as yamlFile:
-        initCond = yaml.safe_load(yamlFile)
+        gamma = initCond['gamma'] # inclination
+        print(gamma)
         
+    elif motionType=='MPC_simu':
+        with open(yamlDir + 'steadyCircle_simuMPC.yaml') as yamlFile:
+            initCond = yaml.safe_load(yamlFile)
+        motionType = 'circular' # circular motion was imulated
+        quat0 = initCond['quat']
+
+        # rotate to align with circle
+        rotAng = eul2quat([0,0,-4*pi/16])
+        quat0 = quatmul(rotAng, quat0)
+        quat0 = [quat0[i] for i in range(4)]
+        
+
     vel0 = initCond['vel']
     vel0 = [float(vel0[i]) for i in range(len(vel0))]
     angRate0 =  initCond['angRate']
 
     x0 = initCond['pos']
     posCenter = initCond['centerPos']
-    quat0 = initCond['quat']
-
-    rudder = initCond['dR']
-
-    trajRad = initCond['radius']
-    
-    gamma = initCond['gamma'] # inclination
-    print(gamma)
-    
-    
-elif motionType=='MPC_simu':
-    motionType = 'circular'
-    
-    with open('steadyCircle_simuMPC.yaml') as yamlFile:
-        initCond = yaml.safe_load(yamlFile)
-    vel0 = initCond['vel']
-    vel0 = [float(vel0[i]) for i in range(len(vel0))]
-    angRate0 =  initCond['angRate']
-
-    x0 = initCond['pos']
-    posCenter = initCond['centerPos']
-    quat0 = initCond['quat']
-
-    rotAng = eul2quat([0,0,-pi/4])
-    quat0 = quatmul(rotAng, quat0)    
-    quat0 = [float(quat0[i]) for i in range(len(quat0))]
     
     rudder = initCond['dR']
 
     trajRad = initCond['radius']
-    
-
-
-rotate = False
-if rotate:
-    rotAng = eul2quat([0,0,-pi/4])
-    quat0 = quatmul(rotAng, quat0)    
-    quat0 = [float(quat0[i]) for i in range(len(quat0))]
-    
-    #x0 = [float(x0[i]) for i in range(len(x0))]
 
 # State: [velocity (BRF), angular rates (BRF), position (IRF), quaternions (IRF-BRF)]
 #parameters['x0'] = [1.5,0,0,0,0,0,0,0,3,1,0,0,0]
@@ -126,6 +123,8 @@ print('Velocity', vel0)
 print('Angular Rate:', angRate0)
 print('Position:', x0)
 print('Quaternions:',quat0)
+print('')
+
 parameters['x0'] = vel0 + angRate0 +  x0 +  quat0
 
 # Steady Control input
@@ -135,12 +134,19 @@ elevator = initCond['dE']
 # Control: [Thrust, Elevevator, Rudder]
 parameters['u0'] = [thrust, elevator, rudder]
 
-# Algeabraic equation for system dynamics using CasADi
-num, flogg, sym = kite_sim(aircraft, parameters)
+
+
+## -------  Algeabraic equation for system dynamics using CasADi ----
+
+num, flogg, sym = kite_sim(parameters)
 integrator_num = num['INT']
 
+# Default input
+U0 = DM(parameters['u0'])
+X0 = parameters['x0']
+
 # global variables
-state = [parameters['x0']]
+state = [DM(X0)]
 
 # Interpret parameters
 vel = [state[-1][0:3]]
@@ -149,11 +155,56 @@ x = [state[-1][6:9]]
 quat = [state[-1][9:13]]
 eul = [quat2eul(quat[-1])]
 
-u0 = parameters['u0']
-print('Control with [T, dE, dR]', u0)
+u0 = [parameters['u0']]
+
+print('Control with [T, dE, dR]', U0)
 
 time = [0]
 
+## ------------- Set up linearized controller -----------------  
+if control == 'None':
+    K = np.zeros(3,3)
+else:
+    kite_dynamicalSystem = sym['DYNAMICS']
+
+    # CASAdi variables
+    state_SYM = sym['state']
+    control_SYM = sym['control']
+
+    # x_(k+1) = A*x_k _ B*u_k
+    #A_X = Function('A_X', [X,U], [jacobian(kite_dynamicalSystem, X)], ['X','Y']) # how to doooooo... read quickly
+    A_X = Function('A_X', [state_SYM, control_SYM], [jacobian(kite_dynamicalSystem, state_SYM)],['x','u'], ['A_X']) 
+    B_X = Function('B_X', [state_SYM, control_SYM], [jacobian(kite_dynamicalSystem, control_SYM)],['x','u'], ['B_X'])
+
+    #u = LQR_controller(state[-1], A_X, B_X, X0, U0)
+    A = A_X(x=X0 , u=U0)
+    A = A['A_X']
+
+    B = B_X(x=X0 , u=U0)
+    B = B['B_X']
+    
+    if control == 'LQR':
+        # minimize J_bar = sum_k0^inf (x_k^T Q x_k)
+        Q = diag(SX([1,1,1, # Velocity
+                     1,1,1, # angulr rotation
+                     0,0,0, # Position
+                     0,0,0,0])) # quaternion
+
+        # R = zeros, N = zeros
+        dimControl = 3
+        R = SX.zeros(dimControl,dimControl)
+
+        # Calculate control
+        K, X,  eigVals = dlqr(A,B,Q,R)
+        print('Eigenvalues of closed loop:', eigVals)
+
+
+    elif control == 'PID':
+        K = PID_controller(A,B)
+
+
+        
+## -------------------- Set up visualization --------------------
 if visual ==2:
     ## Create Animated Plots - 2D
     fig, ax = plt.subplots() 
@@ -211,7 +262,6 @@ hLim = 10 # Boundaries of the Flying Machine Area
 ##  --- Functions ---
 
 def init():
-            
     ax_x.set_ylim(-20, 20)
     ax_x.set_ylabel('Position')
     ax_x.set_xlim(t_start, t_final)
@@ -243,7 +293,18 @@ def init3d():
 def update3d_aircraft(frame):
     dt = frame
     time.append(time[-1]+dt) # update time vector
-    out = integrator_num(x0=state[-1], p=u0)
+
+    if control == 'None': # equilibrium input
+            out = integrator_num(x0=state[-1], p=U0)
+    else: 
+        x_k = np.matrix(state[-1]) 
+        
+        u = - K*x_k + U0  #apply control law
+        out = integrator_num(x0=x_k, p=u)
+        print('Control [T,dE,dR]', u)
+        
+    
+        
     state.append(out['xf'])
         
     vel.append(state[-1][0:3])
@@ -287,7 +348,6 @@ def update3d_aircraft(frame):
 
         if(gamma):
             N_circ = 2*N_circ
-                        
         xCirc = [trajRad*np.sin(dPhi*i)+posCenter[0] for i in range(N_circ+1)]
         yCirc = [trajRad*np.cos(dPhi*i)+posCenter[1] for i in range(N_circ+1)]
         zCirc = [posCenter[2]+dZ*i for i in range(N_circ+1)]
@@ -318,9 +378,8 @@ def update_aircraft(frame):
     # Simulation step
     print('x:', x[-1], '  vel:', vel[-1])
     #print('eulerAngles:', eul[-1], '  angRate:', angRate[-1])
-    #print('quaternions:', quat[-1])
-    
-    out = integrator_num(x0=state[-1], p=u0)
+    # print('quaternions:', quat[-1])
+    out = integrator_num(x0=state[-1], p=U0)
     state.append(out['xf'])
         
     vel.append(state[-1][0:3])
@@ -355,7 +414,7 @@ def update_aircraft(frame):
 
     return line_x ,line_z, line_y , line_pitch, line_yaw, line_roll, line_vx, line_vy, line_vz, line_pRate, line_rRate, line_yRate
 
-def drawPlane(it, quat):
+def drawPlane(it, quat):       
     # Draw airplane body
     q_IB =  [float(quat[i]) for i in range(4)]
 
@@ -420,13 +479,14 @@ def drawPlane(it, quat):
     return planeBody, wingSurf, tailSurf, planeTailHold
 
 
-# Simulation starts here
+# ----------------- Simulation starts here------------
 if visual == 2:
     ani = FuncAnimation(fig, update_aircraft, frames=np.ones(int((t_final-t_start)/dt))*dt,
                         init_func=init, blit=True)
 elif visual == 3:
     ani = FuncAnimation(fig, update3d_aircraft, frames=np.ones(int((t_final-t_start)/dt))*dt,
-                    init_func=init3d, blit=False)
+                            init_func=init3d, blit=False)
+                
 
 #ani = FuncAnimation(fig, update_limitCycle, frames=np.ones(int((t_final-t_start)/dt))*dt,
                     #init_func=init, blit=True)
