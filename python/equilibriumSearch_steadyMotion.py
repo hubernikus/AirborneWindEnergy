@@ -1,5 +1,3 @@
-from quatlib import *
-
 from math import sin, cos, tan, atan2, pi 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,6 +7,15 @@ import cmath
 # import casadi library
 #from casadi import *
 
+# Add path to local libraries
+import sys
+sys.path.append('./model/')
+sys.path.append('./lib/')
+
+# Local libraries
+from kite_sim import *
+from quat_lib import *
+from controllib import *
 
 import yaml # import yaml files
 with open('umx_radian.yaml') as yamlFile:

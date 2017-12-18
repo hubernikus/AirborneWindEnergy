@@ -224,7 +224,7 @@ def kite_sim(params, aircraft = []):
     Rv = ((d_ - Lt))
     Rs = -Rv * (r / d_)
     
-    # #damping term
+    # #damping vterm
     # qvi = quat_mul(q, vertcat(SX([0]),v) )
     # #qvi = quat_mul(q, np.insert(v, 0, 0))
     # qvi_q = quat_mul(qvi, quat_inv(q))
@@ -244,6 +244,7 @@ def kite_sim(params, aircraft = []):
     #Total external forces devided by glider's mass (linear acceleration)
     v_dot = (Faero_b + T_b)/Mass + G_b  - cross(w,v)
     
+
     #-------------------------
     #Dynamic Equation: Moments
     #-------------------------
