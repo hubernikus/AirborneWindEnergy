@@ -201,8 +201,8 @@ else:
         K, X,  eigVals = lqr(A,B,Q,R)
         print('Eigenvalues of closed loop:', eigVals)
 
-    elif control == 'PID':
-        K = PID_controller(A,B)
+    elif control == 'PolePlace':
+        K = PolePlace(A,B)
         
 ## -------------------- Set up visualization --------------------
 if visual == 2:
@@ -238,10 +238,7 @@ def init():
 def predictState(state0, state,  gamma, desiredTrajRad, posCenter, dt, t):
 
     state = np.array(state)
-    
 
-    #import pdb; pdb.set_trace() ## DEBUG ##
-    
     vel = state[0:3,:]
     angRate = state[3:6]
     x = state[6:9]
@@ -259,7 +256,6 @@ def predictState(state0, state,  gamma, desiredTrajRad, posCenter, dt, t):
     posCenter = np.array([posCenter])
     posCenter = posCenter.transpose()
         
-    
     x = x + vel0*dt # move one time step
 
     if motionType == 'linear':
@@ -275,14 +271,12 @@ def predictState(state0, state,  gamma, desiredTrajRad, posCenter, dt, t):
 
         angRateInt = eul2quat(angRate0*dt) # rotation from angular rate
 
-        #import pdb; pdb.set_trace() ## DEBUG ##
-
         #anreRateInt = quatrot(angRateInt,quatinv(q0))
         angRateInt = np.array([angRateInt])
         angRateInt = angRateInt.transpose()
         delta_qZ = np.array([delta_qZ])
         delta_qZ = delta_qZ.transpose()
-                    
+
         q = delta_qZ * angRateInt * q0 # rotate initial qua
         # Project x onto trajection radius
         if motionType == 'circular':
@@ -317,7 +311,8 @@ def update3d_aircraft(frame):
             x_pred, q_pred = predictState(state[-1], state[0],
                         gamma, trajRad, posCenter, dt, time[-1])
 
-                        
+            x_k[6:9] = x_pred
+            
             u =  -K*(x_k[0:9]-X0[0:9])  #apply control law to first states
 
         else :
@@ -325,11 +320,14 @@ def update3d_aircraft(frame):
             
         u = u + U0
         
-        checkControlRange(u)
+        #checkControlRange(u)
         u = saturateControl(u)
+        print('Control [T,dE,dR]', u) # Clear frame
         
-        out = integrator_num(x0=x_k, p=u)
-    
+        out = integrator_num(x0=state[-1], p=u)
+
+    print('Pos: ',out['xf'][6:9])
+    print('Quad: ',out['xf'][9:13])
     state.append(out['xf'])
     
     vel.append(state[-1][0:3])
@@ -337,8 +335,6 @@ def update3d_aircraft(frame):
     x.append(state[-1][6:9])
     quat.append(state[-1][9:13])
 
-    print('Control [T,dE,dR]', u) # Clear frame
-    
     ax_3d.clear()
 
     # Draw current airplane iter = -1
@@ -421,3 +417,4 @@ elif visual == 3:
                     #init_func=init, blit=True)
 plt.show()
 
+ 
