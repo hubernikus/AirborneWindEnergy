@@ -1,7 +1,7 @@
 '''
 Controller Library for system
 
-@author Lucas Huber
+@author Lukas Huber
 @date 04-12-2017
 
 '''
@@ -41,6 +41,7 @@ def checkControlRange(u,T_lim = T_lim0, dE_lim= dE_lim0, dR_lim = dR_lim0):
     elif(u[2] > dR_lim[1]):
         print('Warning: Control dR={} out of range'.format(u[0]))
 
+        
 def saturateControl(u, T_lim = T_lim0, dE_lim= dE_lim0, dR_lim = dR_lim0):
     if(u[0]< T_lim[0]): # Check range of Thrust control
         u[0] = T_lim[0]
@@ -59,7 +60,7 @@ def saturateControl(u, T_lim = T_lim0, dE_lim= dE_lim0, dR_lim = dR_lim0):
 
     return u
 
-def linearizeSystem(sym, X0, U0,  linDim = dim):
+def linearizeSystem(sym, X0, U0, linDim = dim):
     # Linearize such that
     # x(t+1) = A*x(t) - B*u(t)
 
@@ -76,20 +77,105 @@ def linearizeSystem(sym, X0, U0,  linDim = dim):
     A = A_X(x=X0 , u=U0)
     A0 = A['A_X']
     A = A0[0:linDim,0:linDim]
-        
 
     B = B_X(x=X0 , u=U0)
     B0 = B['B_X']
     B  =  B0[0:linDim,:]
     
     return A,B, A0, B0 
+
+def checkObservability_lin(A,C):
+    A = np.array(A)
+    C = np.array(C)
+
+    # Dimensions
+    N = len(A)
+    L = len(C[0])
+
+    print('n', N) # TODO: remove print lines
+    print('n', L)
     
+    # Calculate Controllability matrix Obs = [C; C*A; ...; C*A^(N-1)]
+    Obs = np.zeros((N*L,N))
+    Obs[0:L, :] = C
+    for i in range(N-1):
+        Obs[(i+1)*L:(i+2)*L, :] = np.dot(Obs[i*L:(i+1)*L, :], A)
+
+    print('Obs mat', Obs)
+
+    # Controllability matrix rank 
+    rankObs = np.linalg.matrix_rank(Obs)
+
+    #print('System of Order', N,)
+    #print('Observability matrix of rank: ', rankObs)
+
+    # Return number of unobservable states
+    return N-rankObs
+
+def checkDetectability_lin(A,C):
+    # TODO
+    return 0
+
+def checkControllabily_lin(A,B):
+    # Continuous time invariant system !!!
+    # Ensure right format
+    A = np.array(A)
+    B = np.array(B)
+
+    # Dimensions
+    N = len(A)
+    M = len(B[0])
+
+    # Calculate Controllability matrix Con = [B, A*B, ... , A^(N-1)*B]
+    Con = np.zeros((N,N*M))
+    Con[:,0:M] = B
+    for i in range(N-1):
+        Con[:,(i+1)*M:(i+2)*M] = np.dot(A, Con[:,i*M:(i+1)*M])
+
+    #print('Con mat', Con)
     
+    # Controllability matrix rank 
+    rankCon = np.linalg.matrix_rank(Con)
+
+    #print('System of Order', N,)
+    #print('Controlability matrix of rank: ', rankCon)
+
+    # Return number of uncontrollable states
+    return N-rankCon
+
+def checkStabilizability_lin(A,B):
+    # PHB Test ?! 
+    
+    # Ensure np.array format
+    A = np.array(A)
+    B = np.array(B)
+
+    # Dimensions
+    N = len(A)
+
+    # Calculate eigenvalues
+    eigVals, eigVecs = scipy.linalg.eig(A)
+    print('Eigvals A', eigVals)
+
+    notStabilizable = []
+    # Check for if (A,B) are stabilizable
+    for i in range(len(eigVals)):
+        if(eigVals[i].real >= 0):
+            Stab = np.hstack((eigVals[i]*np.eye((N))-A, B))
+
+            if (np.linalg.matrix_rank(Stab) < N):
+                notStabilizable.append(i)
+
+    # Returns list with state which are not stabilizable
+    return notStabilizable
+
+
 def dPID(A,B,Q,R):
 
     K = 1
     
     return K
+
 
 def lqr(A,B,Q,R):
     """Solve the continuous time lqr controller.

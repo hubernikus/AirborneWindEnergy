@@ -64,11 +64,22 @@ def  draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
         posPred, = ax_3d.plot(xCirc, yCirc, zCirc,'r--')
     else:
         print('prediction not defined')
-        
-
-
 
     return posPred
+
+def draw_aimingPoints(state, x_traj, ax_3d):
+    x_aim = [state[6]]
+    y_aim = [state[7]]
+    z_aim = [state[8]]
+
+    for i in range(len(x_traj)):
+        x_aim.append(x_traj[i][0])
+        x_aim.append(x_traj[i][1])
+        x_aim.append(x_traj[i][2])
+    
+    posAim, = ax_3d.plot(x_aim, y_aim, z_aim,'g--o')
+    
+    return posAim
 
 
 def initFigure_2d():

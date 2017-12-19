@@ -13,7 +13,6 @@ from numpy import linalg as LA
 ## Quaternion Funtions
 def quatinv(q):
     #inverse quaternion 
-    # return inv_q =
     return ( np.array([q[0], -q[1], -q[2], -q[3]]) / LA.norm(q) )
 
 
@@ -24,10 +23,6 @@ def quatmul(q1,q2):
     
     s2 = q2[0]
     v2 = np.array(q2[1:4])
-
-    # return q = ...
-    a = s1*s2 - np.dot(v1,v2)
-    b = np.cross(v1,v2)
 
     return np.hstack(([s1*s2 - np.dot(v1,v2)],np.cross(v1,v2) + s1*v2 + s2*v1))
 
@@ -45,12 +40,22 @@ def quatrot(r, q):
         r_ = quatmul(r_, quatinv(q) )
         return r_[1:4]
     
-    else: # 4d --  rotation of quaternion
+    else: # 4d --  rotation of quaternion ??? is this sensible?
         r_ = quatmul(q, r)
         r_ = quatmul(r_, quatinv(q))
-        
         return r_
 
+
+def quat_rotationRate(q, omega):
+    v = np.array([q[1:3]])
+    
+    S_e = np.array([[0, -q[3], q[2]],
+                    [q[3], 0, -q[1]],
+                    [-q[2], q[1], q[0]]])
+    
+    Phi = np.hstack(( S_e+q[0]*eye(3), -q.T ))
+
+    return 0.5*np.dot(Phi,omega)
     
 def quat2eul(q):
     # roll (x-axis rotation)

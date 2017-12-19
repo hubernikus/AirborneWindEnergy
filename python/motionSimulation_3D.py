@@ -6,8 +6,8 @@ First Aircraft simulation
 
 """
 # Automatically reload libraries, type in ipython shell:
-#   %load_ext autoreload
-#   %autoreload 
+#%load_ext autoreload
+#%autoreload 2
 
 
 ## ----- Import Libraries ##
@@ -53,6 +53,9 @@ visual = 3
 
 # Choose sort of control ---- 'None', 'LQR',  TODO: PID, nonlinear, MPC, etc. 
 control  = 'LQR'
+# Dimension of linear system and controlle [6, 9, 13]
+linearSystemDim = 6
+
 
 # Simulation parameters
 parameters = dict()
@@ -66,7 +69,7 @@ parameters['t_span'] = [t_start, t_final, dt]
 ## ------------------------------------------
 # Physicial Limits of Controller
 
-T_lim = [0, 0.3] # Newton
+T_lim = [0, 0.3] # NewtonX
 dE_lim = [-10/180*pi, 10/180*pi] # rad
 dR_lim = [-10/180*pi, 10/180*pi] # rad
 
@@ -182,19 +185,25 @@ time = [0]
 if control == 'None':
     K = np.zeros((3,3))
 else:
-    linDim = 13
-    A,B, A0, B0 = linearizeSystem(sym, X0, U0, linDim)
+    A,B, A0, B0 = linearizeSystem(sym, X0, U0, linearSystemDim)
+    
+    C = np.hstack(( np.zeros((3,6)), np.eye((3)), np.zeros((3,4)) ))
+
+    controllable = checkControllabily_lin(A,B)
+    notStabilizable = checkStabilizability_lin(A,B)
+    
+    print('Number of non-controllable states', controllable)
+    print('Not stabilizable states', notStabilizable)
     
     if control == 'LQR':
-        # minimize J_bar = sum_k0^inf (x_k^T Q x_k)
-        Q = diag(SX([10,10,100, # Velocity
-                       10, 10, 10,
-                       0.1,0.1,0.1, # Position
-                       0.1,0.1,0.1,0.1])) # quaternion
-                     #10,10,10,
-                     #10,10,10,10]))
-
-        # R = zeros, N = zeros
+        # minimize J_bar = sum_k0^inf (x_k^T Q x_k) + (u_k^T R u_k)
+        diagQ = SX([10,10,100, # Velocity
+                    10, 10, 10, # Angular Rate
+                    0.1,0.1,0.1, # Position
+                    0.1,0.1,0.1,0.1]) # quaternion
+        
+        Q = diag(diagQ[0:linearSystemDim])
+        
         R = diag(SX([10,1000,100]))
 
         # Calculate control
@@ -286,9 +295,9 @@ def predictState(state0, state,  gamma, desiredTrajRad, posCenter, dt, t):
 
         actualTrajRad = sqrt(relPos[0]**2 + relPos[1]**2)
         x[0:2] = x[0:2]*desiredTrajRad/actualTrajRad
-
     return x, q
-    
+
+
 def update3d_aircraft(frame):
     dt = frame
     time.append(time[-1]+dt) # update time vector
