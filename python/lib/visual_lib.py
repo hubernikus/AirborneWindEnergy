@@ -10,7 +10,6 @@ from quatlib import *
 
 from math import sin, cos, tan
 
-
 # Geometry for 3d viusalization
 # Body geometry
 dirBody_B = np.array([1,0,0])
@@ -67,22 +66,27 @@ def  draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
 
     return posPred
 
-def draw_aimingPoints(state, x_traj, ax_3d):
-    x_aim = [state[6]]
-    y_aim = [state[7]]
-    z_aim = [state[8]]
-
+def draw_aimingPositions(state, x_traj, ax_3d, control = 'linear'):
+    #if control == 'linear':
+    #import pdb; pdb.set_trace() ## DEBUG ##
+    
+    x_aim = [float(state[6])]
+    y_aim = [float(state[7])]
+    z_aim = [float(state[8])]
+    
     for i in range(len(x_traj)):
-        x_aim.append(x_traj[i][0])
-        x_aim.append(x_traj[i][1])
-        x_aim.append(x_traj[i][2])
-    
-    posAim, = ax_3d.plot(x_aim, y_aim, z_aim,'g--o')
-    
+        x_aim.append(float(x_traj[i][0]))
+        y_aim.append(float(x_traj[i][1]))
+        z_aim.append(float(x_traj[i][2]))
+
+    posAim, = ax_3d.plot(x_aim, y_aim, z_aim,'g--o', linewidth = 3)
+    #posAim, = ax_3d.plot([x_aim[-1]], [y_aim[-1]], [z_aim[-1]],'g--o', linewidth = 3)
+        
     return posAim
 
 
 def initFigure_2d():
+    
      ## Create Animated Plots - 2D
     fig, ax = plt.subplots() 
     ax_x = plt.subplot(4,1,1) #  Position
@@ -104,8 +108,8 @@ def initFigure_2d():
     line_pRate, = plt.plot([], [], 'r-', animated=True)
     line_rRate, = plt.plot([], [], 'g-', animated=True)
     line_yRate, = plt.plot([], [], 'b-', animated=True)
-    
-    return ax_x, ax_phi, ax_v, ax_omega
+
+    return fig, ax, ax_x, ax_phi, ax_v, ax_omega
     
 def initFigure_3d():
     fig = plt.figure() 
@@ -113,9 +117,9 @@ def initFigure_3d():
     
     return ax_3d, fig
 
-def initFiugre_2d_axis(ax_x,ax_vel, ax_phi,ax_omega,  t_start, t_final):
+def initFiugre_2d_axis(ax_x,ax_vel, ax_phi, ax_omega,  t_start, t_final):
     # todo
-    return 1
+    return 0
     
 def setAxis_3d(ax_3d, hLim = hLim0):
     # Set limits 3D-plot
@@ -127,9 +131,12 @@ def setAxis_3d(ax_3d, hLim = hLim0):
     ax_3d.set_xlabel('X')
     ax_3d.set_ylabel('Y')
 
+def draw2D_lines():
+    # todo
+    return 0
     
 
-def drawPlane3D(it, x, quat, ax_3d):
+def drawPlane3D(it, x, quat, ax_3d, planeCol = 'k'):
     
     # Draw airplane body
     q_IB =  [float(quat[i]) for i in range(4)]
@@ -139,7 +146,7 @@ def drawPlane3D(it, x, quat, ax_3d):
     Y_plane = [x[it][1]-dl1*dBody[1], x[it][1]+dl2*dBody[1]]
     Z_plane = [x[it][2]-dl1*dBody[2], x[it][2]+dl2*dBody[2]]
     
-    planeBody, = ax_3d.plot(X_plane, Y_plane, Z_plane, 'k', linewidth = lWidth)
+    planeBody, = ax_3d.plot(X_plane, Y_plane, Z_plane, color=planeCol, linewidth = lWidth)
     
     # Draw Wing
     dirWing = quatrot(dirWing_B, np.array(q_IB))
@@ -153,7 +160,7 @@ def drawPlane3D(it, x, quat, ax_3d):
     Z_wing=np.array([[x[it][i]+wingPos*dBody[i]+wingSpan*dirWing[i], x[it][i]+wingPos*dBody[i]-wingSpan*dirWing[i]],
           [x[it][i]+(wingWidth+wingPos)*dBody[i]+wingSpan*dirWing[i], x[it][i]+(wingWidth+wingPos)*dBody[i]-wingSpan*dirWing[i]]])
     
-    wingSurf = ax_3d.plot_surface(X_wing, Y_wing, Z_wing, color='k')
+    wingSurf = ax_3d.plot_surface(X_wing, Y_wing, Z_wing, color=planeCol)
     
     # Draw Tail
     #dirWing = quatrot(dirWing_B, np.array(q_IB))
@@ -174,7 +181,7 @@ def drawPlane3D(it, x, quat, ax_3d):
                      [x[it][i]+(tailWidth+tailPos)*dBody[i]+tailSpan*dirWing[i]+dirTail[i]*tailPosz,
                       x[it][i]+(tailWidth+tailPos)*dBody[i]-tailSpan*dirWing[i]+dirTail[i]*tailPosz]])
     
-    tailSurf = ax_3d.plot_surface(X_tail, Y_tail, Z_tail, color='k')
+    tailSurf = ax_3d.plot_surface(X_tail, Y_tail, Z_tail, color=planeCol)
 
         
     # Draw Tail-holder
@@ -188,7 +195,7 @@ def drawPlane3D(it, x, quat, ax_3d):
     Z_tailHold=[x[it][i]+(tailWidth/2+tailPos)*dBody[i],
                 x[it][i]+(tailWidth/2+tailPos)*dBody[i]+dirTail[i]*tailPosz]
     
-    planeTailHold, = ax_3d.plot(X_tailHold, Y_tailHold, Z_tailHold, 'k', linewidth = lWidth)
+    planeTailHold, = ax_3d.plot(X_tailHold, Y_tailHold, Z_tailHold, color=planeCol, linewidth = lWidth)
 
     
     return planeBody, wingSurf, tailSurf, planeTailHold

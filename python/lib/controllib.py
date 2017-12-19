@@ -1,5 +1,5 @@
 '''
-Controller Library for system
+Control Library for system
 
 @author Lukas Huber
 @date 04-12-2017
@@ -16,7 +16,6 @@ import numpy as np
 import scipy.linalg
 
 # ------------------------------------------------------------------------
-
 dim = 13 # number of states
 
 #

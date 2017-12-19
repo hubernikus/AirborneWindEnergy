@@ -45,16 +45,19 @@ t_start = 0
 t_final = 10
 dt = 0.01
 
+# Visualization update interval (default 200 [miliseconds])
+animationInterval = 200
+
 # motion: 'linear', 'circular', 'MPC_simu', 'screw'
 motionType = 'circular'
 
 # Choose sort of visualization  -----  '2' - 2D ; '3' - 3D
-visual = 3
+visual = 2
 
 # Choose sort of control ---- 'None', 'LQR',  TODO: PID, nonlinear, MPC, etc. 
 control  = 'LQR'
 # Dimension of linear system and controlle [6, 9, 13]
-linearSystemDim = 6
+linearSystemDim = 13
 
 
 # Simulation parameters
@@ -98,8 +101,6 @@ if motionType=='linear':
     quat0 = eul2quat(euler0)
 
     rudder = 0
-
-    
 else:# circular or MPC_simu
     if motionType=='circular':
         with open( yamlDir + 'steadyCircle3.yaml') as yamlFile:
@@ -215,8 +216,7 @@ else:
         
 ## -------------------- Set up visualization --------------------
 if visual == 2:
-    ax_x, ax_phi, ax_v, ax_omeag = initFigure_2d()
-    
+    fig, ax, ax_x, ax_phi, ax_v, ax_omega = initFigure_2d()
 elif visual == 3:
     ax_3d, fig = initFigure_3d()
 
@@ -224,7 +224,8 @@ elif visual == 3:
 # Initialization
 
 ##  --- Functions ---
-def init():
+def init2D():
+    print('2D init started')
     ax_x.set_ylim(-20, 20)
     ax_x.set_ylabel('Position')
     ax_x.set_xlim(t_start, t_final)
@@ -242,34 +243,31 @@ def init():
     ax_omega.set_ylabel('Angular Rate [Error]')
     ax_omega.set_xlim(t_start, t_final)
 
+    print('2D init finished')
     return  line_x, line_y, line_z
 
-def predictState(state0, state,  gamma, desiredTrajRad, posCenter, dt, t):
+def predictState(state, state0,  gamma, desiredTrajRad, posCenter, dt, t, ax_3d):
 
     state = np.array(state)
 
-    vel = state[0:3,:]
+    vel = state[0:3]
     angRate = state[3:6]
     x = state[6:9]
     q = state[9:13]
     
     state0 = np.array(state0)
-    #state0 = state0.transpose
-
+    
     vel0 = state0[0:3]
     angRate0 = state0[3:6]
     x0 = state0[6:9]
     q0 = state0[9:13]
-
 
     posCenter = np.array([posCenter])
     posCenter = posCenter.transpose()
         
     x = x + vel0*dt # move one time step
 
-    if motionType == 'linear':
-            return x, q
-    else:
+    if not(motionType == 'linear'):
         relPos = x-posCenter # Relative position to center
         relPos0 = x0 - posCenter
         
@@ -287,6 +285,7 @@ def predictState(state0, state,  gamma, desiredTrajRad, posCenter, dt, t):
         delta_qZ = delta_qZ.transpose()
 
         q = delta_qZ * angRateInt * q0 # rotate initial qua
+
         # Project x onto trajection radius
         if motionType == 'circular':
             x[2] = x0[2]
@@ -295,21 +294,25 @@ def predictState(state0, state,  gamma, desiredTrajRad, posCenter, dt, t):
 
         actualTrajRad = sqrt(relPos[0]**2 + relPos[1]**2)
         x[0:2] = x[0:2]*desiredTrajRad/actualTrajRad
+
+    
+    posAim = draw_aimingPositions(state, [x], ax_3d)
     return x, q
 
-
-def update3d_aircraft(frame):
-    dt = frame
-    time.append(time[-1]+dt) # update time vector
+def applyControl(control, state, time, gamma, trajRad, posCenter, dt, X0, U0, ax_3d):
 
     if control == 'None': # equilibrium input
         out = integrator_num(x0=state[-1], p=U0)
-    else:
+        
+    elif control == 'trajFollowing':
+        # todo
+        return 0
+    
+    elif control == 'LQR':
         x_k = np.matrix(state[-1])
-
         if K.size/3 == 13:
             x_pred, q_pred = predictState(state[-1], state[0],
-                        gamma, trajRad, posCenter, dt, time[-1])
+                                          gamma, trajRad, posCenter, dt, time[-1], ax_3d)
             
             x_k[6:9] = x_pred
             x_k[9:13] = q_pred
@@ -318,25 +321,36 @@ def update3d_aircraft(frame):
 
         elif K.size/3 == 9 :
             x_pred, q_pred = predictState(state[-1], state[0],
-                        gamma, trajRad, posCenter, dt, time[-1])
+                                          gamma, trajRad, posCenter, dt, time[-1], ax_3d)
 
             x_k[6:9] = x_pred
             
-            u =  -K*(x_k[0:9]-X0[0:9])  #apply control law to first states
-
+            u =  -K*(x_k[0:9]-X0[0:9])  # apply control law to first states
         else :
-            u =  -K*(x_k[0:6]-X0[0:6])  #apply control law to first states
+            u =  -K*(x_k[0:6]-X0[0:6])  # apply control law to first states
             
         u = u + U0
         
-        #checkControlRange(u)
+        checkControlRange(u)
         u = saturateControl(u)
         print('Control [T,dE,dR]', u) # Clear frame
         
         out = integrator_num(x0=state[-1], p=u)
+    else:
+        print('Chosen control {} not defined'.format(control))
+        return 0
+    
+    return out
 
-    print('Pos: ',out['xf'][6:9])
-    print('Quad: ',out['xf'][9:13])
+
+def update3d_aircraft(frame):
+    ax_3d.clear()
+
+    dt = frame
+
+    out = applyControl(control, state, time, gamma, trajRad, posCenter, dt, X0, U0, ax_3d)
+    
+    time.append(time[-1]+dt) # update time vector
     state.append(out['xf'])
     
     vel.append(state[-1][0:3])
@@ -344,10 +358,9 @@ def update3d_aircraft(frame):
     x.append(state[-1][6:9])
     quat.append(state[-1][9:13])
 
-    ax_3d.clear()
-
+    
     # Draw current airplane iter = -1
-    planeBody, wingSurf, tailSurf,  planeTailHold = drawPlane3D(-1, x, quat[-1], ax_3d)
+    #planeBody, wingSurf, tailSurf,  planeTailHold = drawPlane3D(-1, x, quat[-1], ax_3d)
 
     # Draw starting plane -- iter=0 (TODO: change color?)
     planeBody, wingSurf, tailSurf,  planeTailHold = drawPlane3D(0, x, quat[0], ax_3d )
@@ -362,29 +375,17 @@ def update3d_aircraft(frame):
 
     setAxis_3d(ax_3d)
     
-    return planeBody, wingSurf, tailSurf, planeTailHold, posHistory, posPred
+    #return planeBody, wingSurf, tailSurf, planeTailHold, posHistory , posPred
     
 def update_aircraft(frame):
     dt = frame
+
+    # Simulation step
+    out = applyControl(control, state, time, gamma, trajRad, posCenter, dt, X0, U0)
+    state.append(out['xf'])
+
     time.append(time[-1]+dt) # update time vector
 
-    if control == 'None': # equilibrium input
-        out = integrator_num(x0=state[-1], p=U0)
-    else: 
-        x_k = np.matrix(state[-1])
-                
-        u =  -K*(x_k[0:6]-X0[0:6])  #apply control law to first states
-        
-        u = u + U0 # reference control
-
-        checkControlRange(u)
-        u = saturateControl(u)
-        
-        out = integrator_num(x0=x_k, p=u)
-            
-    # Simulation step
-    state.append(out['xf'])
-        
     vel.append(state[-1][0:3])
     angRate.append(state[-1][3:6])
     x.append(state[-1][6:9])
@@ -412,18 +413,20 @@ def update_aircraft(frame):
 
     return line_x ,line_z, line_y, line_pitch, line_yaw, line_roll, line_vx, line_vy, line_vz, line_pRate, line_rRate, line_yRate
 
-
+def update_aircraft(frame):
+    return 0
 # ----------------- Simulation starts here------------
 if visual == 2:
-    ani = FuncAnimation(fig, update_aircraft, frames=np.ones(int((t_final-t_start)/dt))*dt,
-                        init_func=init, blit=True)
+    print('Simulation starts....')
+    ani = FuncAnimation(fig, update_aircraft, frames=np.ones(int((t_final-t_start)/dt))*dt, init_func=init, blit=True)
+    print('Simulatin ended.')
+
 elif visual == 3:
-    ani = FuncAnimation(fig, update3d_aircraft, frames=np.ones(int((t_final-t_start)/dt))*dt,
-                            blit=False) # no init call
+    ani = FuncAnimation(fig, update3d_aircraft, interval=animationInterval, frames=np.ones(int((t_final-t_start)/dt))*dt, blit=False) # no init call !?
                 
 
 #ani = FuncAnimation(fig, update_limitCycle, frames=np.ones(int((t_final-t_start)/dt))*dt,
                     #init_func=init, blit=True)
 plt.show()
 
- 
+print('Python finished') 

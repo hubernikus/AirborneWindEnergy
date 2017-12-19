@@ -5,7 +5,6 @@ Author: Lukas Huber
 Date: 2017-11-18
 
 """
-
 import numpy as np
 
 from casadi import *
@@ -93,9 +92,7 @@ print([-4*z[2],+3,0])
 print('')
 
 
-
 print('')
-
 print('End test script')
 print('')    
 
