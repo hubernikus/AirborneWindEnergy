@@ -56,7 +56,6 @@ def saturateControl(u, T_lim = T_lim0, dE_lim= dE_lim0, dR_lim = dR_lim0):
         u[2] = dR_lim[0]
     elif(u[2] > dR_lim[1]):
         u[2] = dR_lim[1]
-
     return u
 
 def linearizeSystem(sym, X0, U0, linDim = dim):
@@ -75,12 +74,22 @@ def linearizeSystem(sym, X0, U0, linDim = dim):
     #u = LQR_controller(state[-1], A_X, B_X, X0, U0)
     A = A_X(x=X0 , u=U0)
     A0 = A['A_X']
-    A = A0[0:linDim,0:linDim]
-
+    
     B = B_X(x=X0 , u=U0)
     B0 = B['B_X']
-    B  =  B0[0:linDim,:]
-    
+
+    if linDim == 10: # Dont use velocity but quaternion
+        d6=6
+        d9=9
+        d13=13
+        A1 = np.hstack((A0[0:d6,0:d6],A0[0:d6,d9:d13]))
+        A2 = np.hstack((A0[d9:d13,0:d6], A0[d9:d13,d9:d13]))
+        A = np.vstack((A1,A2))
+        B = np.vstack((B0[0:d6,:],B0[d9:d13,:]))
+    else:
+        A = A0[0:linDim,0:linDim]
+        B  =  B0[0:linDim,:]    
+
     return A,B, A0, B0 
 
 def checkObservability_lin(A,C):
@@ -154,7 +163,7 @@ def checkStabilizability_lin(A,B):
 
     # Calculate eigenvalues
     eigVals, eigVecs = scipy.linalg.eig(A)
-    print('Eigvals A', eigVals)
+    #print('Eigvals A', eigVals)
 
     notStabilizable = []
     # Check for if (A,B) are stabilizable
@@ -170,7 +179,6 @@ def checkStabilizability_lin(A,B):
 
 
 def dPID(A,B,Q,R):
-
     K = 1
     
     return K
@@ -178,7 +186,7 @@ def dPID(A,B,Q,R):
 
 def lqr(A,B,Q,R):
     """Solve the continuous time lqr controller.
-     
+pp     
     dx/dt = A x + B u
      
     cost = integral x.T*Q*x + u.T*R*u

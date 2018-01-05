@@ -6,6 +6,9 @@ import cmath
 
 # import casadi library
 #from casadi import *
+yamlDir = '../steadyState_modes/'
+modelDir = './model/'
+
 
 # Add path to local libraries
 import sys
@@ -14,11 +17,11 @@ sys.path.append('./lib/')
 
 # Local libraries
 from kite_sim import *
-from quat_lib import *
+from quatlib import *
 from controllib import *
 
 import yaml # import yaml files
-with open('umx_radian.yaml') as yamlFile:
+with open(modelDir + 'umx_radian.yaml') as yamlFile:
     aircraft = yaml.safe_load(yamlFile)
 
 
@@ -129,7 +132,7 @@ def steadyLevel(dE, gamma):
     # Create output dictionnary
     steadyState = {}
     steadyState['dE'] = dE
-    steadyState['alpha'] = alpha
+    SteadyState['alpha'] = alpha
     steadyState['vel'] = vel
     steadyState['T'] = T
     steadyState['gamma'] = gamma
@@ -171,6 +174,11 @@ def longitudinalFlight(dE, gamma):
     steadyState['vel'] = vel
     steadyState['T'] = T
     steadyState['gamma'] = gamma
+
+    
+    steadyState['dR'] = 0 # sraight line flight, no rudder
+    steadyState['angRate'] = [0,0,0] # no rotation, straight line flight
+
     
     return steadyState
 
@@ -563,7 +571,7 @@ print('Stable Circle flight with:')
 print('Circle Radius:', initValues_circ['radius'])
 print('Angle of attack:', initValues_circ['alpha'])
 print('Sideslip:', initValues_circ['beta'])
-print('mu', mu)
+#print('mu', mu)
 print(' --- State --- ')
 print('Angular Rate',initValues_circ['angRate'])
 print('Position,', initValues_circ['pos'])
@@ -594,7 +602,7 @@ print('Stable Circle flight with:')
 print('Circle Radius:', initValues_circ['radius'])
 print('Angle of attack:', initValues_circ['alpha'])
 print('Sideslip:', initValues_circ['beta'])
-print('mu', mu)
+#print('mu', mu)
 print(' --- State --- ')
 print('Angular Rate',initValues_circ['angRate'])
 print('Position,', initValues_circ['pos'])

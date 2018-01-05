@@ -78,38 +78,36 @@ def draw_aimingPositions(state, x_traj, ax_3d, control = 'linear'):
         x_aim.append(float(x_traj[i][0]))
         y_aim.append(float(x_traj[i][1]))
         z_aim.append(float(x_traj[i][2]))
-
+        
     posAim, = ax_3d.plot(x_aim, y_aim, z_aim,'g--o', linewidth = 3)
     #posAim, = ax_3d.plot([x_aim[-1]], [y_aim[-1]], [z_aim[-1]],'g--o', linewidth = 3)
-        
     return posAim
 
 
 def initFigure_2d():
-    
      ## Create Animated Plots - 2D
     fig, ax = plt.subplots() 
-    ax_x = plt.subplot(4,1,1) #  Position
+    ax_x = plt.subplot(4,1,3) #  Position
     line_x, = plt.plot([], [], 'r-', animated=True, label = 'x')
     line_y, = plt.plot([], [], 'g-', animated=True, label = 'y')
     line_z, = plt.plot([], [], 'b-', animated=True, label = 'z')
 
-    ax_phi = plt.subplot(4,1,2) # Orientation    line_pitch, = plt.plot([], [], 'r-', animated=True)
+    ax_phi = plt.subplot(4,1,4)# Orientation    line_pitch, = plt.plot([], [], 'r-', animated=True)
     line_pitch, = plt.plot([], [], 'r-', animated=True)
     line_roll, = plt.plot([], [], 'g-', animated=True)
     line_yaw, = plt.plot([], [], 'b-', animated=True)
     
-    ax_v = plt.subplot(4,1,3) # Velocity
+    ax_v = plt.subplot(4,1,1) # Velocity
     line_vx, = plt.plot([], [], 'r-', animated=True)
     line_vy, = plt.plot([], [], 'g-', animated=True)
     line_vz, = plt.plot([], [], 'b-', animated=True)
 
-    ax_omega = plt.subplot(4,1,4) # Angular Rate
+    ax_omega = plt.subplot(4,1,2) # Angular Rate
     line_pRate, = plt.plot([], [], 'r-', animated=True)
     line_rRate, = plt.plot([], [], 'g-', animated=True)
     line_yRate, = plt.plot([], [], 'b-', animated=True)
 
-    return fig, ax, ax_x, ax_phi, ax_v, ax_omega
+    return fig, ax, ax_x, ax_phi, ax_v, ax_omega, line_x, line_y, line_z, line_pitch, line_roll, line_yaw, line_vx, line_vy, line_vz, line_pRate, line_rRate, line_yRate
     
 def initFigure_3d():
     fig = plt.figure() 
