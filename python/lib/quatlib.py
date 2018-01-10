@@ -63,8 +63,7 @@ def eul2quat_rotationrate(omega):
     # TODO
     return 0
     
-    
-    
+#    
 def quat2eul(q):
     # roll (x-axis rotation)
     sinr = +2.0 * (q[0]*q[1] + q[2]*q[3])

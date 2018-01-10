@@ -15,7 +15,7 @@ from math import sin, cos, tan
 dirBody_B = np.array([1,0,0])
 dl1 = 1.2 # Length tail of plane
 dl2 = 0.5 # length noise of plane
-lWidth = 3 # thickness of body
+lWidth = 7 # thickness of body
 
 # Wing geometry
 dirWing_B = np.array([0, 1, 0])
@@ -29,11 +29,12 @@ tailSpan = 0.3
 tailWidth = 0.25
 tailPos = -1.2
 tailPosz = 0.5
+
 # Prediction length
 lPred = 15
 
 # Horizontal limits for the 3d grid (x,y direction)
-hLim0 = 10 # Boundaries of the Flying Machine Area
+hLim0 = 5 # Boundaries of the Flying Machine Area
 
 
 def  draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d):
@@ -44,6 +45,10 @@ def  draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
                               [x0[1], x0[1]+dVel[1]],
                               [x0[2], x0[2]+dVel[2]],
                                'r--')
+
+        predLine = [[x0[0], x0[0]+dVel[0]],
+                    [x0[1], x0[1]+dVel[1]],
+                    [x0[2], x0[2]+dVel[2]]]
         
     elif motionType =='circular': 
         #print('draw circle')
@@ -61,10 +66,14 @@ def  draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
         zCirc = [posCenter[2]+dZ*i for i in range(N_circ+1)]
                                 
         posPred, = ax_3d.plot(xCirc, yCirc, zCirc,'r--')
+        predLine = [xCirc, yCirc, zCirc]
+        
     else:
         print('prediction not defined')
+        predLine = []
+        posPred = []
 
-    return posPred
+    return posPred, predLine
 
 def draw_aimingPositions(state, x_traj, ax_3d, control = 'linear'):
     #if control == 'linear':
@@ -123,18 +132,21 @@ def setAxis_3d(ax_3d, hLim = hLim0):
     # Set limits 3D-plot
     ax_3d.set_xlim(-hLim, hLim)
     ax_3d.set_ylim(-hLim, hLim)
-    ax_3d.set_zlim(-20,10)
-    ax_3d.invert_zaxis()
+    ax_3d.set_zlim(-3,3)
+    
     ax_3d.invert_yaxis()
     ax_3d.set_xlabel('X')
     ax_3d.set_ylabel('Y')
+
+    #plt.gca().set_aspect('equal')
+
 
 def draw2D_lines():
     # todo
     return 0
     
 
-def drawPlane3D(it, x, quat, ax_3d, planeCol = 'k'):
+def drawPlane3D(it, x, quat, ax_3d, planeCol = 'k', transp = 1):
     
     # Draw airplane body
     q_IB =  [float(quat[i]) for i in range(4)]
@@ -144,7 +156,7 @@ def drawPlane3D(it, x, quat, ax_3d, planeCol = 'k'):
     Y_plane = [x[it][1]-dl1*dBody[1], x[it][1]+dl2*dBody[1]]
     Z_plane = [x[it][2]-dl1*dBody[2], x[it][2]+dl2*dBody[2]]
     
-    planeBody, = ax_3d.plot(X_plane, Y_plane, Z_plane, color=planeCol, linewidth = lWidth)
+    planeBody, = ax_3d.plot(X_plane, Y_plane, Z_plane, color=planeCol, linewidth = lWidth, alpha=transp)
     
     # Draw Wing
     dirWing = quatrot(dirWing_B, np.array(q_IB))
@@ -158,7 +170,7 @@ def drawPlane3D(it, x, quat, ax_3d, planeCol = 'k'):
     Z_wing=np.array([[x[it][i]+wingPos*dBody[i]+wingSpan*dirWing[i], x[it][i]+wingPos*dBody[i]-wingSpan*dirWing[i]],
           [x[it][i]+(wingWidth+wingPos)*dBody[i]+wingSpan*dirWing[i], x[it][i]+(wingWidth+wingPos)*dBody[i]-wingSpan*dirWing[i]]])
     
-    wingSurf = ax_3d.plot_surface(X_wing, Y_wing, Z_wing, color=planeCol)
+    wingSurf = ax_3d.plot_surface(X_wing, Y_wing, Z_wing, color=planeCol, alpha=transp)
     
     # Draw Tail
     #dirWing = quatrot(dirWing_B, np.array(q_IB))
@@ -179,9 +191,9 @@ def drawPlane3D(it, x, quat, ax_3d, planeCol = 'k'):
                      [x[it][i]+(tailWidth+tailPos)*dBody[i]+tailSpan*dirWing[i]+dirTail[i]*tailPosz,
                       x[it][i]+(tailWidth+tailPos)*dBody[i]-tailSpan*dirWing[i]+dirTail[i]*tailPosz]])
     
-    tailSurf = ax_3d.plot_surface(X_tail, Y_tail, Z_tail, color=planeCol)
+    tailSurf = ax_3d.plot_surface(X_tail, Y_tail, Z_tail, color=planeCol, alpha=transp)
 
-        
+
     # Draw Tail-holder
     i = 0
     X_tailHold=[x[it][i]+(tailWidth/2+tailPos)*dBody[i],
@@ -193,7 +205,7 @@ def drawPlane3D(it, x, quat, ax_3d, planeCol = 'k'):
     Z_tailHold=[x[it][i]+(tailWidth/2+tailPos)*dBody[i],
                 x[it][i]+(tailWidth/2+tailPos)*dBody[i]+dirTail[i]*tailPosz]
     
-    planeTailHold, = ax_3d.plot(X_tailHold, Y_tailHold, Z_tailHold, color=planeCol, linewidth = lWidth)
+    planeTailHold, = ax_3d.plot(X_tailHold, Y_tailHold, Z_tailHold, color=planeCol, linewidth = lWidth, alpha=transp)
 
-    
+        
     return planeBody, wingSurf, tailSurf, planeTailHold

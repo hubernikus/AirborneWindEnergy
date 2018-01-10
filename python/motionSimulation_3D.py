@@ -19,6 +19,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 #from matplotlib.patches import
 
+import csv
+
 from casadi import * # casadi library
 
 import yaml # import yaml files
@@ -39,6 +41,7 @@ from equilibriumSearch_steadyMotion import longitudinalFlight
 # Direcotries
 yamlDir = '../steadyState_modes/'
 modelDir = './model/'
+csvDir = '../simulationResults/'
 
 ##  --------- SIMULATION PARAMETERS ------------ 
 # Simulation Time Parameters
@@ -47,7 +50,7 @@ t_final = 10
 dt = 0.01
 
 # Visualization update interval (default 200 [miliseconds])
-animationInterval = 100
+animationInterval = 10
 
 # motion: 'linear', 'circular', 'MPC_simu', 'screw'
 motionType = 'circular'
@@ -57,8 +60,8 @@ visual = 3
 
 # Choose sort of control ---- 'None', 'LQR', 'steadyStatePrediction' TODO: PID, nonlinear, MPC, etc.
 #control  = 'LQR'
-#control  = 'None'
-control  = 'steadyStatePrediction'
+control  = 'None'
+#control  = 'steadyStatePrediction'
 
 # Dimension of LQR
 if control  == 'steadyStatePrediction':
@@ -66,7 +69,20 @@ if control  == 'steadyStatePrediction':
 else:# Dimension of linear system and controlle [6, 9, 10, 13]
     linearSystemDim = 10
     
+# Simulation output name to save to file
+#simuName = 'None'
+#simuName = 'linearSteadyLevel'
+#simuName = 'lnearAscending'
+#simuName = 'lnearDescending'
+simuName = 'circular_2'
+#simuName = 'MPC_simuluation'
 
+
+if not(simuName =='None'):
+    csvFile = open(csvDir + 'numeric_'+ simuName + '.csv', 'w')
+    csvWriter = csv.writer(csvFile)
+    csvWriter.writerow(['time','velolicity0','v1','v2', 'angularRate0','a1', 'a2', 'position0','p1','p2', 'quaternion0','q1','q2','q3', 'thrust', 'elevator' , 'rudder'])
+    
 # Simulation parameters
 parameters = dict()
 parameters['simulation']= 0
@@ -88,8 +104,10 @@ dR_lim = [-10/180*pi, 10/180*pi] # rad
 # Import Initial Position and Control
 
 if motionType=='linear':
-    with open(yamlDir + 'steadyState_longitudial_steadyLevel.yaml') as yamlFile:
+    #with open(yamlDir + 'steadyState_longitudial_steadyLevel.yaml') as yamlFile:
     #with open('steadyState_longitudial.yaml') as yamlFile:
+    #with open(yamlDir+ 'steadyState_longitudinal_gamma-30deg.yaml') as yamlFile:
+    with open(yamlDir + 'steadyState_longitudinal_gamma15deg.yaml') as yamlFile:
         initCond = yaml.safe_load(yamlFile)
     vel0 = initCond['vel']
     alpha0 = initCond['alpha']
@@ -100,7 +118,7 @@ if motionType=='linear':
     gamma = initCond['gamma']
 
     angRate0 = [0, 0, 0]
-    x0 = [-15, 0, 0]
+    x0 = [-3, 0, 0]
 
     euler0 = [0,alpha0+gamma,0]
     euler0 = [0,alpha0+gamma,0]
@@ -110,8 +128,9 @@ if motionType=='linear':
     rudder = 0
 else:# circular or MPC_simu
     if motionType=='circular':
-        with open( yamlDir + 'steadyCircle3.yaml') as yamlFile:
+        #with open( yamlDir + 'steadyCircle3.yaml') as yamlFile:
         #with open(yamlDir + 'circle_gammadeg.yaml') as yamlFile:
+        with open( yamlDir + 'circle_gamma0deg_vel10_rad5.yaml') as yamlFile:
             initCond = yaml.safe_load(yamlFile)
             
         quat0 = initCond['quat']
@@ -160,9 +179,11 @@ elevator = initCond['dE']
 
 # Control: [Thrust, Elevevator, Rudder]
 parameters['u0'] = [thrust, elevator, rudder]
-print('Thrust', 'Elevator', 'Rudder')
+print('Thrust', 'Elevattor', 'Rudder')
 print(parameters['u0'])
 
+dimStates = 13
+dimController = 3
 
 ## -------  Algeabraic equation for System dynamics using CasADi ----
 num, flogg, sym = kite_sim(parameters)
@@ -230,7 +251,31 @@ if visual == 2:
 elif visual == 3:
     ax_3d, fig = initFigure_3d()
 
-    
+# Save predicited position
+posPred, predLine = draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
+with  open(csvDir + 'numeric_'+ simuName + '_posPred' + '.csv', 'w') as csvFile_posPred:
+    csvWriter_posPred = csv.writer(csvFile_posPred)
+    for i in range(len(predLine[0])):
+        tempRow = []
+        for dim in range(3):
+            tempRow.append(predLine[dim][i])
+        csvWriter_posPred.writerow(tempRow)
+
+
+if not(simuName == 'None'):
+    csvRow = [str(time[-1])]
+    temp_csvRow = [time[-1]]
+
+    for i in range(dimStates):
+        csvRow.append(str(state[-1][i]))
+        temp_csvRow.append(state[-1][i])
+
+    for i in range(dimController):
+        csvRow.append(str(U0[i]))
+        temp_csvRow.append(U0[i])
+
+    csvWriter.writerow(csvRow)
+
 # Initialization
 
 ##  --- Functions ---
@@ -254,7 +299,7 @@ def init2D():
     
     return line_y, line_z, line_x, line_pitch, line_yaw, line_roll, line_vx, line_vy, line_vz, line_pRate, line_rRate, line_yRate
     
-def predictState(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
+def predictStat(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
     state = np.array(state)
 
     vel = state[0:3]
@@ -277,7 +322,7 @@ def predictState(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
             
     #vel_I = vel
     
-    x = x + vel_I*dt*10 # move one time step
+    x = x + vel_I*dt*100 # move one time step
     
     draw_aimingPositions(state, [x], ax_3d)
 
@@ -311,11 +356,15 @@ def predictState(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
         actualTrajRad = sqrt(relPos[0]**2 + relPos[1]**2)
         x[0:2] = x[0:2]*desiredTrajRad/actualTrajRad
 
+        #r_vec = [desiredTrajRad, 0, 0]
+        #x[0:2] = quatrot()
+
     
     return x, q
 
 def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0):
     x_pred = 0
+    u = 0
     
     if control == 'steadyStatePrediction':
         #dt = dt*50
@@ -385,9 +434,7 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
         x_k = state[-1]
         X0[9:13] = q_pred[:,0] 
 
-                        
         u =  -K_i*(np.vstack((x_k[0:6],x_k[9:13]))-np.array([np.hstack((X0[0:6],X0[9:13]))]).T )  # apply control law to first states
-                
                 
         #u = u1 + U0
         u = u + np.array(([U0])).T
@@ -397,11 +444,8 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
 
         print('[T, dE, dR] - ', u.T)
         
-        
-        
         out = integrator_num(x0=state[-1], p=u)
 
-    
     elif control == 'LQR':
         x_k = np.matrix(state[-1])
         if K.size/3 == 13:
@@ -444,7 +488,7 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
         print('Chosen control {} not defined'.format(control))
         return 0
     
-    return out, x_pred
+    return out, x_pred, u
 
 
 def update3d_aircraft(frame):
@@ -452,10 +496,11 @@ def update3d_aircraft(frame):
 
     dt = frame
 
+    u = U0
     if control == 'None':
         out = integrator_num(x0=state[-1], p=U0)
     else:
-        out, x_pred = applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
+        out, x_pred, u = applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
         if control == 'steadyStatePrediction':
             posAim = draw_aimingPositions(state[-1], [x_pred], ax_3d)
         elif K.size/3 !=6:
@@ -481,7 +526,24 @@ def update3d_aircraft(frame):
                              [x[i][2] for i in range(len(x))],
                              'k--', linewidth=1)
 
-    posPred = draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
+    if not(control == 'None'):
+        posPred = draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
+
+    if not(simuName == 'None'):
+        csvRow = [str(time[-1])]
+        temp_csvRow = [time[-1]]
+
+        for i in range(dimStates):
+            csvRow.append(str(state[-1][i]))
+            temp_csvRow.append(state[-1][i])
+
+        for i in range(dimController):
+            csvRow.append(str(u[i]))
+            temp_csvRow.append(u[i])
+
+        csvWriter.writerow(csvRow)
+
+        
 
     setAxis_3d(ax_3d)
     
@@ -539,7 +601,8 @@ if visual == 2:
 
 elif visual == 3:
     ani = FuncAnimation(fig, update3d_aircraft, interval=animationInterval, frames=np.ones(int((t_final-t_start)/dt))*dt, blit=False) # no init call !?
-                
+
+#csvFile.close()
 
 #ani = FuncAnimation(fig, update_limitCycle, frames=np.ones(int((t_final-t_start)/dt))*dt,
                     #init_func=init, blit=True)

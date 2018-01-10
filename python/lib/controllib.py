@@ -15,14 +15,14 @@ from casadi import *
 import numpy as np
 import scipy.linalg
 
+import time
+
 # ------------------------------------------------------------------------
 dim = 13 # number of states
 
-#
 T_lim0 = [0, 0.3] # Newton
 dE_lim0 = [-10/180*pi, 10/180*pi] # rad
 dR_lim0 = [-10/180*pi, 10/180*pi] # rad
-
 
 def checkControlRange(u,T_lim = T_lim0, dE_lim= dE_lim0, dR_lim = dR_lim0):
     if(u[0]< T_lim[0]): # Check range of Thrust control
@@ -59,6 +59,8 @@ def saturateControl(u, T_lim = T_lim0, dE_lim= dE_lim0, dR_lim = dR_lim0):
     return u
 
 def linearizeSystem(sym, X0, U0, linDim = dim):
+    #startT = time.time()
+        
     # Linearize such that
     # x(t+1) = A*x(t) - B*u(t)
 
@@ -88,9 +90,13 @@ def linearizeSystem(sym, X0, U0, linDim = dim):
         B = np.vstack((B0[0:d6,:],B0[d9:d13,:]))
     else:
         A = A0[0:linDim,0:linDim]
-        B  =  B0[0:linDim,:]    
+        B  =  B0[0:linDim,:]
+    endT = time.time()
 
-    return A,B, A0, B0 
+    #dT = endT - startT
+
+    #return A,B, A0, B0, dT
+    return A,B, A0, B0
 
 def checkObservability_lin(A,C):
     A = np.array(A)

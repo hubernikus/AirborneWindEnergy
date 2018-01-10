@@ -453,7 +453,7 @@ def writeToYamlFile(fileName, initValues):
     if 'q' in initValues:
         initVal['q'] = [float(vel[i][0]) for i in range(len(q))]
 
-    with open(fileName + '.yaml', 'w') as outfile:
+    with open(yamlDir + fileName + '.yaml', 'w') as outfile:
         yaml.dump(initVal, outfile, default_flow_style=False)
 
 def writeToYamlFile_singleValue(fileName, initValues):
@@ -475,7 +475,6 @@ def writeToYamlFile_singleValue(fileName, initValues):
 print('Start script')
 
 yamlDir ='../steadyState_modes/'
-
 
 figDir =  '../fig/'
 dE = np.linspace(-0.05,0.05,41)
@@ -540,10 +539,11 @@ print('')
 # plt.xlabel('Elevator [deg]')
 # plt.ylabel('Thrust [N]')
 # plt.xlim(elevator[0],elevator[-1])
-gamma = 5*pi/180 #angle in rad 
+gammaDeg = 15
+gamma = gammaDeg*pi/180 #angle in rad 
 dE = np.array([0])
 initValues = longitudinalFlight(dE, gamma)
-writeToYamlFile('steadyState_longitudial', initValues)
+writeToYamlFile('steadyState_longitudinal_' + 'gamma' + str(gammaDeg) + 'deg', initValues)
 
 elevator0 = initValues['dE'][0]
 alpha0 = initValues['alpha'][0]
@@ -556,9 +556,8 @@ T0 = initValues['T'][0]
 # print('Velocities:')
 # print(vel0)
 # print('Thrust:', T0)
-
-Vel = 13 # m/s
-r = 3 # m/s
+Vel =  10 # m/s
+r = 5 # m/s
 
 gamma = 0
 initValues_circ = steadyState_circle(Vel,r, gamma)
@@ -583,14 +582,15 @@ print('Elevator:', initValues_circ['dE'])
 print('Rudder:', initValues_circ['dR'])
 print('')
 
-with open(yamlDir + 'circle_gamma0deg' + '.yaml', 'w') as outfile:
+
+with open(yamlDir + 'circle_gamma0deg_vel' + str(Vel) + '_rad' + '5' + '.yaml', 'w') as outfile:
     yaml.dump(initValues_circ, outfile, default_flow_style=False)
 
 #with open('steadyCircle2' + '.yaml', 'w') as outfile:
 #    yaml.dump(initValues_circ2, outfile, default_flow_style=False)
 
 
-gamDeg = 45
+gamDeg = 15
 gamma = gamDeg*pi/180
 initValues_circ = steadyState_circle(Vel,r, gamma)
 with open(yamlDir+'circle_gamma{}deg.yaml'.format(gamDeg) , 'w') as outfile:
