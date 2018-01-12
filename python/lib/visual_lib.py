@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import matplotlib.pyplot as plt
 
 from matplotlib.animation import FuncAnimation
@@ -132,9 +134,9 @@ def setAxis_3d(ax_3d, hLim = hLim0):
     # Set limits 3D-plot
     ax_3d.set_xlim(-hLim, hLim)
     ax_3d.set_ylim(-hLim, hLim)
-    ax_3d.set_zlim(-3,3)
+    ax_3d.set_zlim(3,-3)
+    #ax_3d.invert_zaxis()
     
-    ax_3d.invert_yaxis()
     ax_3d.set_xlabel('X')
     ax_3d.set_ylabel('Y')
 

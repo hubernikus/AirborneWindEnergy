@@ -60,11 +60,12 @@ u = []
 #simuName = 'lnearAscending'
 #simuName = 'lnearDescending'
 #simuName = 'circular'
-simuName = 'circular_2'
-#simuName = 'MPC_simuluation'
+#simuName = 'circular_2'
+#simuName = 'linear_MPC'
+#simuName = 'linear_noLQR'
+simuName = 'circular_MPC'
 
-
-simuMax = 500
+simuMax = 150
 
 # Load predicted position
 posPred = [[],[],[]]
@@ -107,9 +108,10 @@ with open(csvDir + 'numeric_'+ simuName + '.csv', 'r') as csvFile:
         eul.append(quat2eul(quat[-1]))
 
         u.append([])
-        for i in range(3):
-            u[-1].append(float(row[14+i]))
-            
+        u[-1].append(float(row[14]))
+        u[-1].append(float(row[15])*180/pi)
+        u[-1].append(float(row[16])*180/pi)
+                    
         if(it_import > simuMax):
             break
         else:
@@ -117,7 +119,7 @@ with open(csvDir + 'numeric_'+ simuName + '.csv', 'r') as csvFile:
 
 simuNum = min(len(pos), simuMax)
 
-nPlanes = 5
+nPlanes = 3
 
 
 
@@ -138,7 +140,7 @@ planeBody, wingSurf, tailSurf, planeTailHold = drawPlane3D(simuNum-1, pos, quat[
 
 finalTime = time[simuNum-1]
 setAxis_3d(ax_3d)
-ax_3d.set_zlim(6,-2)
+ax_3d.set_zlim(2,-6)
 fig.set_size_inches(13, 9)
 fig.savefig(figDir + simuName + '_fig3D_auto' + '.eps', dpi=100)
 
@@ -215,26 +217,41 @@ ax_omega.legend()
 
 #open(csvDir + 'numeric_'+ simuName + '_posPred' + '.csv', 'r') as csvFile:
 fig.savefig(figDir + simuName + '_fig2D' + '.eps', dpi=100)
+fig.subplots_adjust(hspace=.3)
+
+T_lim = [0, 0.3] # NewtonX
+dE_lim = [-10/180*pi, 10/180*pi] # rad
+dR_lim = [-10/180*pi, 10/180*pi] # rad
 
 fig, ax = plt.subplots()
 fig.set_size_inches(8, 5)
 
 ax_thrust = plt.subplot(3,1,1)
 ax_thrust.set_xlim(time[0],finalTime)
-ax_thrust.set_ylim(0, 0.7)
-ax_thrust.set_ylabel('Thrust [mN]')
+ax_thrust.set_ylim(T_lim[0],T_lim[1])
+ax_thrust.set_ylabel('Thrust [N]')
 plt.plot(time[0:simuNum], [u[i][0] for i in range(simuNum)], 'r', label='Thrust $[mN]$')
+
+
+minVal = min([u[i][1]  for i in range(simuNum)])
+maxVal = max([u[i][1]  for i in range(simuNum)])
+dVal = maxVal-minVal
 
 ax_dE = plt.subplot(3,1,2)
 ax_dE.set_xlim(time[0],finalTime)
-ax_dE.set_ylim(-0.4, 0.4)
-ax_dE.set_ylabel('Elevator [rad]')
+ax_dE.set_ylim(dE_lim[0], dE_lim[1])
+ax_dE.set_ylim(round(minVal-dVal*0.1,4), round(maxVal+dVal*0.1,4))
+ax_dE.set_ylabel('Elevator [deg]')
 plt.plot(time[0:simuNum], [u[i][1] for i in range(simuNum)], 'r', label='Thrust $[mN]$')
+
+minVal = min([u[i][2]  for i in range(simuNum)])
+maxVal = max([u[i][2]  for i in range(simuNum)])
+dVal = maxVal-minVal
 
 ax_dR = plt.subplot(3,1,3)
 ax_dR.set_xlim(time[0],finalTime)
-ax_dR.set_ylim(-0.4, 0.4)
-ax_dR.set_ylabel('Rudder [rad]')
+ax_dR.set_ylim(round(minVal-dVal*0.1,4), round(maxVal+dVal*0.1,4))
+ax_dR.set_ylabel('Rudder [deg]')
 plt.plot(time[0:simuNum], [u[i][2] for i in range(simuNum)], 'r', label='Thrust $[mN]$')
 ax_dR.set_xlabel('Time [s]')
 

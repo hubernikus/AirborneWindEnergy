@@ -6,7 +6,7 @@ First Aircraft simulation
 
 """
 # Automatically reload libraries, type in ipython shell:
-#%load_ext autoreload
+#%Load_ext autoreload
 #%autoreload 2
 
 ## ----- Import Libraries ##
@@ -60,22 +60,26 @@ visual = 3
 
 # Choose sort of control ---- 'None', 'LQR', 'steadyStatePrediction' TODO: PID, nonlinear, MPC, etc.
 #control  = 'LQR'
-control  = 'None'
-#control  = 'steadyStatePrediction'
+#control  = 'None'
+control  = 'steadyStatePrediction'
 
 # Dimension of LQR
 if control  == 'steadyStatePrediction':
     linearSystemDim = 10 # DON'T TOUCH!!!
 else:# Dimension of linear system and controlle [6, 9, 10, 13]
-    linearSystemDim = 10
+    linearSystemDim = 6
     
 # Simulation output name to save to file
 #simuName = 'None'
 #simuName = 'linearSteadyLevel'
 #simuName = 'lnearAscending'
 #simuName = 'lnearDescending'
-simuName = 'circular_2'
+#simuName = 'circular_2'
 #simuName = 'MPC_simuluation'
+#imuName = 'linear_LQR'
+#simuName = 'linear_noLQR'
+#simuName = 'circular_MPC'
+simuName = 'circular_steadyStatePrediction'
 
 
 if not(simuName =='None'):
@@ -94,11 +98,9 @@ parameters['t_span'] = [t_start, t_final, dt]
 
 ## ------------------------------------------
 # Physicial Limits of Controller
-
 T_lim = [0, 0.3] # NewtonX
 dE_lim = [-10/180*pi, 10/180*pi] # rad
 dR_lim = [-10/180*pi, 10/180*pi] # rad
-
 
 ## --------------------------------------
 # Import Initial Position and Control
@@ -106,8 +108,8 @@ dR_lim = [-10/180*pi, 10/180*pi] # rad
 if motionType=='linear':
     #with open(yamlDir + 'steadyState_longitudial_steadyLevel.yaml') as yamlFile:
     #with open('steadyState_longitudial.yaml') as yamlFile:
-    #with open(yamlDir+ 'steadyState_longitudinal_gamma-30deg.yaml') as yamlFile:
-    with open(yamlDir + 'steadyState_longitudinal_gamma15deg.yaml') as yamlFile:
+    with open(yamlDir+ 'steadyState_longitudinal_gamma-30deg.yaml') as yamlFile:
+    #with open(yamlDir + 'steadyState_longitudinal_gamma15deg.yaml') as yamlFile:
         initCond = yaml.safe_load(yamlFile)
     vel0 = initCond['vel']
     alpha0 = initCond['alpha']
@@ -121,7 +123,7 @@ if motionType=='linear':
     x0 = [-3, 0, 0]
 
     euler0 = [0,alpha0+gamma,0]
-    euler0 = [0,alpha0+gamma,0]
+    
     
     quat0 = eul2quat(euler0)
 
@@ -138,7 +140,7 @@ else:# circular or MPC_simu
         gamma = initCond['gamma'] # inclination
         print(gamma)
         
-    elif motionType=='MPC_simu':
+    elif motionType=='PMC_simu':
         with open(yamlDir + 'steadyCircle_simuMPC.yaml') as yamlFile:
             initCond = yaml.safe_load(yamlFile)
         motionType = 'circular' # circular motion was imulated
@@ -198,6 +200,10 @@ X0 = X0.transpose()
 state = [DM(X0)]
 
 # Interpret parameters
+#euler_corr= [0,0,pi/8]
+#quat_corr = eul2quat(euler_corr)
+#state[-1][9:13] = quat_corr
+
 q_rotX = eul2quat([pi,0,0])
 vel = [state[-1][0:3]]
 angRate = [state[-1][3:6]]
@@ -224,17 +230,17 @@ else:
     
     if control == 'LQR':
         # minimize J_bar = sum_k0^inf (x_k^T Q x_k) + (u_k^T R u_k)
-        diagQ = SX([10,100,100,        # Velocity
+        diagQ = SX([10,10,10,        # Velocity
                     10, 10, 10,       # Angular Rate
                     0.1,0.1,0.1,      # Position
-                    10,100,100,100]) # quaternion
+                    10,10,10,10]) # quaternion
 
         if linearSystemDim == 10:
             Q = diag( vertcat(diagQ[0:6], diagQ[9:13] ) )
         else:
             Q = diag(diagQ[0:linearSystemDim])
             
-        R = diag(SX([10,1000,100]))
+        R = diag(SX([10,100,100]))
 
         # Calculate control
         K, X,  eigVals = lqr(A,B,Q,R)
@@ -299,7 +305,7 @@ def init2D():
     
     return line_y, line_z, line_x, line_pitch, line_yaw, line_roll, line_vx, line_vy, line_vz, line_pRate, line_rRate, line_yRate
     
-def predictStat(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
+def predictState(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
     state = np.array(state)
 
     vel = state[0:3]
@@ -322,7 +328,7 @@ def predictStat(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
             
     #vel_I = vel
     
-    x = x + vel_I*dt*100 # move one time step
+    x = x + vel_I*dt*10 # move one time step
     
     draw_aimingPositions(state, [x], ax_3d)
 
@@ -422,7 +428,7 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
             
         #Q = diag(diagQ[0:linearSystemDim])
         
-        R = diag(SX([10,1000,100]))
+        R = diag(SX([10,10,10]))
 
         # Calculate control
         K_i, X,  eigVals = lqr(A,B,Q,R)
