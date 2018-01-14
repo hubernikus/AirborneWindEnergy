@@ -556,8 +556,8 @@ T0 = initValues['T'][0]
 # print('Velocities:')
 # print(vel0)
 # print('Thrust:', T0)
-Vel =  10 # m/s
-r = 5 # m/s
+Vel =  14 # m/s
+r = 3 # m/s
 
 gamma = 0
 initValues_circ = steadyState_circle(Vel,r, gamma)
@@ -583,7 +583,7 @@ print('Rudder:', initValues_circ['dR'])
 print('')
 
 
-with open(yamlDir + 'circle_gamma0deg_vel' + str(Vel) + '_rad' + '5' + '.yaml', 'w') as outfile:
+with open(yamlDir + 'circle_gamma0deg_vel' + str(Vel) + '_rad' + str(r) + '.yaml', 'w') as outfile:
     yaml.dump(initValues_circ, outfile, default_flow_style=False)
 
 #with open('steadyCircle2' + '.yaml', 'w') as outfile:

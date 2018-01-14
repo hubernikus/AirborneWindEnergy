@@ -52,7 +52,8 @@ def  draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
                     [x0[1], x0[1]+dVel[1]],
                     [x0[2], x0[2]+dVel[2]]]
         
-    elif motionType =='circular': 
+    elif (motionType =='circular' or motionType == 'MPC_simu'):
+        
         #print('draw circle')
         N_circ = 20 # number of sample points
         
@@ -97,7 +98,8 @@ def draw_aimingPositions(state, x_traj, ax_3d, control = 'linear'):
 
 def initFigure_2d():
      ## Create Animated Plots - 2D
-    fig, ax = plt.subplots() 
+    fig, ax = plt.subplots()
+    fig.set_size_inches(14.40, 10.80)
     ax_x = plt.subplot(4,1,3) #  Position
     line_x, = plt.plot([], [], 'r-', animated=True, label = 'x')
     line_y, = plt.plot([], [], 'g-', animated=True, label = 'y')
@@ -121,7 +123,8 @@ def initFigure_2d():
     return fig, ax, ax_x, ax_phi, ax_v, ax_omega, line_x, line_y, line_z, line_pitch, line_roll, line_yaw, line_vx, line_vy, line_vz, line_pRate, line_rRate, line_yRate
     
 def initFigure_3d():
-    fig = plt.figure() 
+    fig = plt.figure()
+    fig.set_size_inches(14.40, 10.80)
     ax_3d = fig.add_subplot(111, projection='3d')
     
     return ax_3d, fig
@@ -130,16 +133,17 @@ def initFiugre_2d_axis(ax_x,ax_vel, ax_phi, ax_omega,  t_start, t_final):
     # todo
     return 0
     
-def setAxis_3d(ax_3d, hLim = hLim0):
+def setAxis_3d(ax_3d, camPos, hLim = hLim0):
     # Set limits 3D-plot
     ax_3d.set_xlim(-hLim, hLim)
     ax_3d.set_ylim(-hLim, hLim)
-    ax_3d.set_zlim(3,-3)
+    ax_3d.set_zlim(6,-5)
     #ax_3d.invert_zaxis()
     
     ax_3d.set_xlabel('X')
     ax_3d.set_ylabel('Y')
 
+    ax_3d.view_init(elev=camPos[0], azim=camPos[1])
     #plt.gca().set_aspect('equal')
 
 

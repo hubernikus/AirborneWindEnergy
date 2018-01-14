@@ -6,13 +6,14 @@ First Aircraft simulation
 
 """
 # Automatically reload libraries, type in ipython shell:
-#%Load_ext autoreload
+#%load_ext autoreload
 #%autoreload 2
 
 ## ----- Import Libraries ##
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from matplotlib.animation import writers
 
 # 3D Animation utils
 from mpl_toolkits.mplot3d import Axes3D
@@ -29,7 +30,7 @@ import yaml # import yaml files
 import sys
 sys.path.append('./model/')
 sys.path.append('./lib/')
-sys.path.append('./') # TODO: change and move equilibrium search to library folder..., below,ooo 
+sys.path.append('./') # TODO: change and move equilibrium search to library folder..., below,ooo
 
 # Local libraries
 from kite_sim import *
@@ -42,8 +43,9 @@ from equilibriumSearch_steadyMotion import longitudinalFlight
 yamlDir = '../steadyState_modes/'
 modelDir = './model/'
 csvDir = '../simulationResults/'
+aniDir = '../ani/'
 
-##  --------- SIMULATION PARAMETERS ------------ 
+##  --------- SIMULATION PARAMETERS ------------
 # Simulation Time Parameters
 t_start = 0
 t_final = 10
@@ -60,33 +62,36 @@ visual = 3
 
 # Choose sort of control ---- 'None', 'LQR', 'steadyStatePrediction' TODO: PID, nonlinear, MPC, etc.
 #control  = 'LQR'
-#control  = 'None'
-control  = 'steadyStatePrediction'
+control  = 'None'
+#control  = 'steadyStatePrediction'
 
 # Dimension of LQR
 if control  == 'steadyStatePrediction':
     linearSystemDim = 10 # DON'T TOUCH!!!
 else:# Dimension of linear system and controlle [6, 9, 10, 13]
     linearSystemDim = 6
-    
+
 # Simulation output name to save to file
 #simuName = 'None'
 #simuName = 'linearSteadyLevel'
 #simuName = 'lnearAscending'
 #simuName = 'lnearDescending'
-#simuName = 'circular_2'
+simuName = 'circular2'
 #simuName = 'MPC_simuluation'
 #imuName = 'linear_LQR'
 #simuName = 'linear_noLQR'
 #simuName = 'circular_MPC'
-simuName = 'circular_steadyStatePrediction'
+#simuName = 'circular_steadyStatePrediction'
+
+camPos = [20, 140]
+saveAni = True
 
 
 if not(simuName =='None'):
     csvFile = open(csvDir + 'numeric_'+ simuName + '.csv', 'w')
     csvWriter = csv.writer(csvFile)
     csvWriter.writerow(['time','velolicity0','v1','v2', 'angularRate0','a1', 'a2', 'position0','p1','p2', 'quaternion0','q1','q2','q3', 'thrust', 'elevator' , 'rudder'])
-    
+
 # Simulation parameters
 parameters = dict()
 parameters['simulation']= 0
@@ -94,7 +99,7 @@ parameters['plot'] = 0
 parameters['vr'] = 0
 parameters['int_type'] = 'cvodes'
 parameters['t_span'] = [t_start, t_final, dt]
-
+ 
 
 ## ------------------------------------------
 # Physicial Limits of Controller
@@ -108,8 +113,8 @@ dR_lim = [-10/180*pi, 10/180*pi] # rad
 if motionType=='linear':
     #with open(yamlDir + 'steadyState_longitudial_steadyLevel.yaml') as yamlFile:
     #with open('steadyState_longitudial.yaml') as yamlFile:
-    with open(yamlDir+ 'steadyState_longitudinal_gamma-30deg.yaml') as yamlFile:
-    #with open(yamlDir + 'steadyState_longitudinal_gamma15deg.yaml') as yamlFile:
+    #with open(yamlDir+ 'steadyState_longitudinal_gamma-30deg.yaml') as yamlFile:
+    with open(yamlDir + 'steadyState_longitudinal_gamma15deg.yaml') as yamlFile:
         initCond = yaml.safe_load(yamlFile)
     vel0 = initCond['vel']
     alpha0 = initCond['alpha']
@@ -123,8 +128,8 @@ if motionType=='linear':
     x0 = [-3, 0, 0]
 
     euler0 = [0,alpha0+gamma,0]
-    
-    
+
+
     quat0 = eul2quat(euler0)
 
     rudder = 0
@@ -132,15 +137,16 @@ else:# circular or MPC_simu
     if motionType=='circular':
         #with open( yamlDir + 'steadyCircle3.yaml') as yamlFile:
         #with open(yamlDir + 'circle_gammadeg.yaml') as yamlFile:
-        with open( yamlDir + 'circle_gamma0deg_vel10_rad5.yaml') as yamlFile:
+        #with open( yamlDir + 'circle_gamma0deg_vel10_rad5.yaml') as yamlFile:
+        with open( yamlDir + 'circle_gamma0deg_vel14_rad3.yaml') as yamlFile:
             initCond = yaml.safe_load(yamlFile)
-            
+
         quat0 = initCond['quat']
 
         gamma = initCond['gamma'] # inclination
         print(gamma)
-        
-    elif motionType=='PMC_simu':
+
+    elif motionType=='MPC_simu':
         with open(yamlDir + 'steadyCircle_simuMPC.yaml') as yamlFile:
             initCond = yaml.safe_load(yamlFile)
         motionType = 'circular' # circular motion was imulated
@@ -160,7 +166,7 @@ else:# circular or MPC_simu
 
     x0 = initCond['pos']
     posCenter = initCond['centerPos']
-    
+
     rudder = initCond['dR']
 
     trajRad = initCond['radius']
@@ -215,19 +221,19 @@ print('Control with [T, dE, dR]', U0)
 
 time = [0]
 
-## ------------- Set up linearized system -----------------  
+## ------------- Set up linearized system -----------------
 if control == 'None':
     K = np.zeros((3,3))
 else:
     A,B, A0, B0 = linearizeSystem(sym, X0, U0, linearSystemDim)
-    
+
     #C = np.hstack(( np.zeros((3,6)), np.eye((3)), np.zeros((3,4)) ))
     controllable = checkControllabily_lin(A,B)
     notStabilizable = checkStabilizability_lin(A,B)
-    
+
     print('Number of non-controllable states', controllable)
     print('Not stabilizable states', notStabilizable)
-    
+
     if control == 'LQR':
         # minimize J_bar = sum_k0^inf (x_k^T Q x_k) + (u_k^T R u_k)
         diagQ = SX([10,10,10,        # Velocity
@@ -239,7 +245,7 @@ else:
             Q = diag( vertcat(diagQ[0:6], diagQ[9:13] ) )
         else:
             Q = diag(diagQ[0:linearSystemDim])
-            
+
         R = diag(SX([10,100,100]))
 
         # Calculate control
@@ -250,7 +256,7 @@ else:
         K = PolePlace(A,B)
     elif control == 'steadyStatePrediction':
         K = 0
-        
+
 ## -------------------- Set up visualization --------------------
 if visual == 2:
     fig, ax, ax_x, ax_phi, ax_v, ax_omega, line_x, line_y, line_z, line_pitch, line_roll, line_yaw, line_vx, line_vy, line_vz, line_pRate, line_rRate, line_yRate = initFigure_2d()
@@ -259,6 +265,8 @@ elif visual == 3:
 
 # Save predicited position
 posPred, predLine = draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
+#import pdb; pdb.set_trace() ## DEBUG ##
+
 with  open(csvDir + 'numeric_'+ simuName + '_posPred' + '.csv', 'w') as csvFile_posPred:
     csvWriter_posPred = csv.writer(csvFile_posPred)
     for i in range(len(predLine[0])):
@@ -302,9 +310,9 @@ def init2D():
     ax_omega.set_ylim(-7, 7)
     ax_omega.set_ylabel('Angular Rate [Error]')
     ax_omega.set_xlim(t_start, t_final)
-    
+
     return line_y, line_z, line_x, line_pitch, line_yaw, line_roll, line_vx, line_vy, line_vz, line_pRate, line_rRate, line_yRate
-    
+
 def predictState(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
     state = np.array(state)
 
@@ -312,9 +320,9 @@ def predictState(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
     angRate = state[3:6]
     x = state[6:9]
     q = state[9:13]
-    
+
     state0 = np.array(state0)
-    
+
     vel0 = state0[0:3]
     angRate0 = state0[3:6]
     x0 = state0[6:9]
@@ -322,25 +330,25 @@ def predictState(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
 
     posCenter = np.array([posCenter])
     posCenter = posCenter.transpose()
-        
+
     vel_I = np.array([quatrot(vel[:,0],q[:,0])])
     vel_I = vel_I.T
-            
+
     #vel_I = vel
-    
+
     x = x + vel_I*dt*10 # move one time step
-    
+
     draw_aimingPositions(state, [x], ax_3d)
 
     if not(motionType == 'linear'):
         dPhi = 30/180*pi
-        
+
         relPos = x-posCenter # Relative position to center
         relPos0 = x0 - posCenter
-        
-        rotZ = atan2(relPos[1], relPos[0]) # Rotation around Z 
-        rotZ0 = atan2(relPos0[1], relPos0[0]) 
-        
+
+        rotZ = atan2(relPos[1], relPos[0]) # Rotation around Z
+        rotZ0 = atan2(relPos0[1], relPos0[0])
+
         delta_qZ = eul2quat([0,0,rotZ-rotZ0]) # rotation from deviation from 0 pos
 
         angRateInt = eul2quat(angRate0*dt) # rotation from angular rate
@@ -365,13 +373,13 @@ def predictState(state, state0,  gamma, desiredTrajRad, posCenter, dt, t):
         #r_vec = [desiredTrajRad, 0, 0]
         #x[0:2] = quatrot()
 
-    
+
     return x, q
 
 def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0):
     x_pred = 0
     u = 0
-    
+
     if control == 'steadyStatePrediction':
         #dt = dt*50
         x_pred, q_pred = predictState(state[-1], state[0],
@@ -379,33 +387,33 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
         dX = x_pred - state[-1][6:9]
 
         yaw = -atan2(dX[1], dX[0])
-        gamma = atan2(dX[2],sqrt(dX[0]*dX[0] + dX[1]*dX[1]) ) 
+        gamma = atan2(dX[2],sqrt(dX[0]*dX[0] + dX[1]*dX[1]) )
 
         # approximation with straight line flight no rudder
         dR =0
- 
+
         # choose one variable, here Elevator
         dE = np.array([0])
-        
+
         # Calculate the steady state trajectory which leads to the point
         steadyState_pred = longitudinalFlight(dE, gamma)
 
         # Import values
         U0 = [float(steadyState_pred['T']), float(steadyState_pred['dE']), dR]
-        
+
         vel = steadyState_pred['vel']
         vel = [float(vel[i]) for i in range(3)]
-        angRate = [0,0,0] 
+        angRate = [0,0,0]
         pos = state[-1][6:9]
         pos = [float(pos[i]) for i in range(3)]
         quat = eul2quat([0,steadyState_pred['gamma'], yaw])
-        
+
         X0 = vel + angRate + pos + quat
-        
+
         #import pdb; pdb.set_trace() ## DEBUG ##
 
         A,B, A0, B0 = linearizeSystem(sym, X0, U0, linearSystemDim)
-    
+
         #C = np.hstack(( np.zeros((3,6)), np.eye((3)), np.zeros((3,4)) ))
 
         controllable = checkControllabily_lin(A,B)
@@ -420,14 +428,14 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
                     1, 1, 1000,       # Angular Rate
                     0.1,0.1,0.1,      # Position
                     1000,1000,1000,1000]) # quaternion
-        
+
         if len(A) == 10:
             Q = diag( vertcat(diagQ[0:6], diagQ[9:13] ) )
         else:
             Q = diag(diagQ[0:linearSystemDim])
-            
+
         #Q = diag(diagQ[0:linearSystemDim])
-        
+
         R = diag(SX([10,10,10]))
 
         # Calculate control
@@ -438,10 +446,10 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
                                           gamma, trajRad, posCenter, dt, time[-1])
 
         x_k = state[-1]
-        X0[9:13] = q_pred[:,0] 
+        X0[9:13] = q_pred[:,0]
 
         u =  -K_i*(np.vstack((x_k[0:6],x_k[9:13]))-np.array([np.hstack((X0[0:6],X0[9:13]))]).T )  # apply control law to first states
-                
+
         #u = u1 + U0
         u = u + np.array(([U0])).T
 
@@ -449,7 +457,7 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
         checkControlRange(u)
 
         print('[T, dE, dR] - ', u.T)
-        
+
         out = integrator_num(x0=state[-1], p=u)
 
     elif control == 'LQR':
@@ -457,10 +465,10 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
         if K.size/3 == 13:
             x_pred, q_pred = predictState(state[-1], state[0],
                                           gamma, trajRad, posCenter, dt, time[-1])
-            
+
             x_k[6:9] = x_pred
             x_k[9:13] = q_pred
-            
+
             u =  -K*(x_k-X0)  #apply control law to first states
 
         elif K.size/3 == 9 :
@@ -468,7 +476,7 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
                                           gamma, trajRad, posCenter, dt, time[-1])
 
             x_k[6:9] = x_pred
-            
+
             u =  -K*(x_k[0:9]-X0[0:9])  # apply control law to first states
 
         elif K.size/3 == 10:
@@ -481,19 +489,19 @@ def applyControl(control, state, time, gamma, trajRad, posCenter, dt, K, X0, U0)
 
         else :
             u =  -K*(x_k[0:6]-X0[0:6])  # apply control law to first states
-            
+
         u = u + U0
-        
+
         checkControlRange(u)
         u = saturateControl(u)
-        
+
         print('Control [T,dE,dR]', u) # Clear frame
         out = integrator_num(x0=state[-1], p=u)
 
     else:
         print('Chosen control {} not defined'.format(control))
         return 0
-    
+
     return out, x_pred, u
 
 
@@ -514,30 +522,32 @@ def update3d_aircraft(frame):
 
     time.append(time[-1]+dt) # update time vector
     state.append(out['xf'])
-    
+
     vel.append(state[-1][0:3])
     angRate.append(state[-1][3:6])
     x.append(state[-1][6:9])
     quat.append(state[-1][9:13])
-    
+
     # Draw current airplane iter = -1
     planeBody, wingSurf, tailSurf,  planeTailHold = drawPlane3D(-1, x, quat[-1], ax_3d)
 
     # Draw starting plane -- iter=0 (TODO: change color?)
     planeBody, wingSurf, tailSurf,  planeTailHold = drawPlane3D(0, x, quat[0], ax_3d)
-    
+
     # Draw history of CM
     posHistory, = ax_3d.plot([x[i][0] for i in range(len(x))],
                              [x[i][1] for i in range(len(x))],
                              [x[i][2] for i in range(len(x))],
                              'k--', linewidth=1)
 
-    if not(control == 'None'):
+    if True:
+        
+    #if not(control == 'None'):
         posPred = draw_posPred(motionType, x0, vel0, quat0, gamma, trajRad, posCenter, ax_3d)
 
     if not(simuName == 'None'):
         csvRow = [str(time[-1])]
-        temp_csvRow = [time[-1]]
+        temp_csvRow = [time[-1 ]]
 
         for i in range(dimStates):
             csvRow.append(str(state[-1][i]))
@@ -549,12 +559,11 @@ def update3d_aircraft(frame):
 
         csvWriter.writerow(csvRow)
 
-        
 
-    setAxis_3d(ax_3d)
-    
-    #return planeBody, wingSurf, tailSurf, planeTailHold, posHistory , posPred
-    
+    setAxis_3d(ax_3d, camPos)
+
+    return planeBody, wingSurf, tailSurf, planeTailHold, posHistory #, posPred
+
 def update_aircraft(frame):
     dt = frame
 
@@ -567,7 +576,7 @@ def update_aircraft(frame):
             posAim = draw_aimingPositions(state[-1], [x_pred], ax_3d)
         elif K.size/3 !=6:
             posAim = draw_aimingPositions(state[-1], [x_pred], ax_3d)
-    
+
     state.append(out['xf'])
 
     time.append(time[-1]+dt) # update time vector
@@ -591,7 +600,7 @@ def update_aircraft(frame):
     line_vx.set_data(time, [vel[i][0]-vel0[0] for i in range(len(eul))])
     line_vy.set_data(time, [vel[i][1]-vel0[1] for i in range(len(eul))])
     line_vz.set_data(time, [vel[i][2]-vel0[2] for i in range(len(eul))])
-    
+
     line_pRate.set_data(time, [angRate[i][0]-angRate0[0] for i in range(len(eul))])
     line_rRate.set_data(time, [angRate[i][1]-angRate0[1] for i in range(len(eul))])
     line_yRate.set_data(time, [angRate[i][2]-angRate0[2] for i in range(len(eul))])
@@ -612,7 +621,14 @@ elif visual == 3:
 
 #ani = FuncAnimation(fig, update_limitCycle, frames=np.ones(int((t_final-t_start)/dt))*dt,
                     #init_func=init, blit=True)
+#writer = writers['ffmpeg'](fps=30)
+
+dpi = 100
+
+if saveAni:
+    #ani.save(aniDir + simuName +  '.mp4',writer=writer,dpi=dpi)
+    ani.save(aniDir + simuName +  '.mp4',dpi=dpi)
+
 plt.show()
 
-print('Python finished') 
- 
+print('Python finished')
